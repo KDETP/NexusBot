@@ -288,20 +288,6 @@ async function searchYouTube(query) {
                 throw new Error("Playlist vide.");
             }
 
-            const hasPlayableFormat =
-                Array.isArray(info.formats) &&
-                info.formats.some(format =>
-                    format &&
-                    (
-                        format.acodec &&
-                        format.acodec !== "none"
-                    )
-                );
-
-            if (!hasPlayableFormat) {
-                throw new Error("Aucun format audio disponible.");
-            }
-
             tracks.push({
                 title:
                     info.title ||
