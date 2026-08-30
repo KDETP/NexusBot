@@ -23,8 +23,13 @@ const brain =
 // FFMPEG
 // ==========================================
 
-process.env.FFMPEG_PATH =
-    "C:\\Users\\zodiq\\Desktop\\ffmpeg-9.0-essentials_build\\ffmpeg-9.0-essentials_build\\bin\\ffmpeg.exe";
+if (process.platform === "win32") {
+    process.env.FFMPEG_PATH =
+        "C:\\Users\\ausxj\\Desktop\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe";
+} else {
+    process.env.FFMPEG_PATH =
+        "/usr/bin/ffmpeg";
+}
 
 
 // ==========================================
