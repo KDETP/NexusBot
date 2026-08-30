@@ -988,7 +988,7 @@ function createYouTubeProcess(url, outputFile) {
                 !text.includes("[download]")
             ) {
                 console.log(
-                    `yt-dlp [${client}]: ${text}`
+                    `yt-dlp [auto]: ${text}`
                 );
             }
         }
