@@ -20,10 +20,22 @@ const { YtDlp } = require("ytdlp-nodejs");
 // ======================================================
 
 const FFMPEG_PATH =
-    "C:\\Users\\ausxj\\Desktop\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe";
+    process.platform === "win32"
+        ? "C:\\Users\\ausxj\\Desktop\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe"
+        : "/usr/bin/ffmpeg";
 
 const YTDLP_PATH =
-    "C:\\Users\\ausxj\\Desktop\\NexusBot\\node_modules\\ytdlp-nodejs\\bin\\yt-dlp.exe";
+    process.platform === "win32"
+        ? "C:\\Users\\ausxj\\Desktop\\NexusBot\\node_modules\\ytdlp-nodejs\\bin\\yt-dlp.exe"
+        : path.join(
+            __dirname,
+            "..",
+            "..",
+            "node_modules",
+            "ytdlp-nodejs",
+            "bin",
+            "yt-dlp_linux"
+        );
 
 const NODE_PATH = process.execPath;
 
