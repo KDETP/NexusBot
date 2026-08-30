@@ -231,7 +231,7 @@ async function searchYouTube(query) {
         );
     }
 
-    const candidates = search.entries
+    const tracks = search.entries
         .filter(Boolean)
         .map(video => {
             const url =
@@ -249,7 +249,7 @@ async function searchYouTube(query) {
 
             return {
                 title: video.title || query,
-                url,
+                url: normalizeYouTubeUrl(url),
                 thumbnail: video.thumbnail || null,
                 duration: video.duration || 0,
                 requester: null,
@@ -258,84 +258,12 @@ async function searchYouTube(query) {
         })
         .filter(Boolean);
 
-    if (!candidates.length) {
+    if (!tracks.length) {
         throw new Error("Aucun résultat YouTube valide.");
     }
 
-    // Vérifie réellement les résultats avant de les donner au lecteur.
-    // Une vidéo peut apparaître dans les résultats mais être "unavailable"
-    // lorsqu'on demande ses informations directement.
-    const tracks = [];
-
-    for (const candidate of candidates) {
-        try {
-            const info = await ytdlp.getInfoAsync(
-                candidate.url,
-                {
-                    rawArgs: getYtDlpArgs()
-                }
-            );
-
-            if (!info) {
-                throw new Error("Informations YouTube absentes.");
-            }
-
-            if (
-                info._type === "playlist" &&
-                info.entries &&
-                !info.entries.length
-            ) {
-                throw new Error("Playlist vide.");
-            }
-
-            tracks.push({
-                title:
-                    info.title ||
-                    candidate.title ||
-                    query,
-
-                url:
-                    info.webpage_url ||
-                    info.original_url ||
-                    candidate.url,
-
-                thumbnail:
-                    info.thumbnail ||
-                    candidate.thumbnail ||
-                    null,
-
-                duration:
-                    info.duration ||
-                    candidate.duration ||
-                    0,
-
-                requester: null,
-                source: "YouTube"
-            });
-
-            console.log(
-                `✅ Résultat lisible : ${tracks[tracks.length - 1].title}`
-            );
-        } catch (error) {
-            console.log(
-                `⏭️ Résultat ignoré (indisponible) : ${candidate.title}`
-            );
-        }
-    }
-
-    if (!tracks.length) {
-        throw new Error(
-            `Aucun résultat YouTube lisible pour "${query}".`
-        );
-    }
-
-    // Conserve la liste des autres résultats valides pour le fallback,
-    // mais ces résultats ont déjà été vérifiés.
-    const first = tracks[0];
-    first.alternatives = tracks.slice(1);
-
     console.log(
-        `🎵 ${tracks.length} résultat(s) lisible(s) trouvé(s).`
+        `🎵 ${tracks.length} résultat(s) trouvé(s).`
     );
 
     tracks.forEach((track, index) => {
@@ -344,7 +272,10 @@ async function searchYouTube(query) {
         );
     });
 
-    return tracks;
+    const first = tracks[0];
+    first.alternatives = tracks.slice(1);
+
+    return first;
 }
 
 // ======================================================
@@ -1129,27 +1060,19 @@ function createFFmpeg(inputFile) {
 async function retryTrack(guildId, track) {
     const data = guildPlayers.get(guildId);
 
-    if (!data) {
+    if (!data || data.skipping) {
         return;
     }
-
-    if (data.skipping) {
-        return;
-    }
-
-    // ==================================================
-    // FALLBACK DE RECHERCHE
-    // ==================================================
 
     if (
-        track.alternatives &&
+        Array.isArray(track.alternatives) &&
         track.alternatives.length
     ) {
         const alternative =
             track.alternatives.shift();
 
         console.log(
-            `🔄 Fallback résultat : ${alternative.title}`
+            `🔄 Résultat suivant : ${alternative.title}`
         );
 
         alternative.requester =
@@ -1167,6 +1090,7 @@ async function retryTrack(guildId, track) {
         data.streamAttempt =
             0;
 
+        cleanupProcesses(data);
         cleanupAudioFile(data);
 
         await new Promise(
@@ -1185,61 +1109,18 @@ async function retryTrack(guildId, track) {
         return;
     }
 
-    // ==================================================
-    // RETRY DU MÊME MORCEAU
-    // ==================================================
-    // Aucun retry aveugle : les résultats alternatifs ont déjà
-    // été validés avant d'être proposés au lecteur.
-
-    if (
-        data.streamAttempt < MAX_STREAM_ATTEMPTS &&
-        (!track.alternatives || !track.alternatives.length)
-    ) {
-        console.log(
-            `🔁 Nouvelle tentative unique : ${track.title}`
-        );
-
-        data.processing = false;
-
-        cleanupAudioFile(data);
-
-        await new Promise(
-            resolve =>
-                setTimeout(
-                    resolve,
-                    500
-                )
-        );
-
-        await playTrack(
-            guildId,
-            track
-        );
-
-        return;
-    }
-
-    // ==================================================
-    // ABANDON
-    // ==================================================
-
     console.error(
-        `❌ Impossible de lire après plusieurs tentatives : ${track.title}`
+        `❌ Aucun résultat lisible : ${track.title}`
     );
 
-    data.current =
-        null;
-
-    data.processing =
-        false;
-
-    data.streamAttempt =
-        0;
+    data.current = null;
+    data.processing = false;
+    data.streamAttempt = 0;
 
     cleanupProcesses(data);
     cleanupAudioFile(data);
 
-    playNext(guildId);
+    await playNext(guildId);
 }
 
 // ======================================================
@@ -1281,14 +1162,12 @@ async function playTrack(guildId, track) {
     const generation =
         ++data.generation;
 
-    const client = "auto";
-
     console.log(
         `▶️ Lecture : ${track.title}`
     );
 
     console.log(
-        `🔧 Téléchargement ${data.streamAttempt}/${MAX_STREAM_ATTEMPTS} avec client ${client}`
+        "🔧 Téléchargement avec yt-dlp (sélection automatique)"
     );
 
     let ytdlpProcess =
@@ -1324,7 +1203,7 @@ async function playTrack(guildId, track) {
         }
 
         console.error(
-            `❌ Échec lecture (auto) :`,
+            "❌ Échec lecture (yt-dlp / FFmpeg) :",
             error?.message ||
                 error
         );
@@ -1334,13 +1213,10 @@ async function playTrack(guildId, track) {
         currentData.processing =
             false;
 
-        // Si le fichier local existe déjà, on le garde
-        // uniquement si on veut le rejouer via retryTrack.
         cleanupAudioFile(currentData);
 
-        // Une seule tentative avec la sélection automatique de yt-dlp.
-        // On passe au mécanisme de fallback sans relancer le même morceau
-        // en boucle.
+        // Un seul passage vers le résultat suivant.
+        // Aucun retry du même morceau => pas de boucle infinie.
         await retryTrack(
             guildId,
             track
