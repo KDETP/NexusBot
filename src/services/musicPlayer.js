@@ -40,16 +40,12 @@ const YTDLP_PATH =
 const NODE_PATH = process.execPath;
 
 const AUTO_DISCONNECT_DELAY = 5 * 60 * 1000;
-const MAX_STREAM_ATTEMPTS = 3;
+const MAX_STREAM_ATTEMPTS = 1;
 
-// IMPORTANT:
-// Do NOT use android_vr here.
-// YouTube has had recent 403/client-token issues around mixed client
-// selection. We deliberately use one client per attempt.
+// Laisse yt-dlp choisir automatiquement le meilleur client YouTube.
+// Le test direct sur le VPS fonctionne avec cette configuration.
 const STREAM_CLIENTS = [
-    "web_embedded",
-    "tv",
-    "default"
+    "auto"
 ];
 
 const guildPlayers = new Map();
@@ -108,12 +104,9 @@ console.log("🟢 Version Node :", process.version);
 // ARGUMENTS PAR CLIENT
 // ======================================================
 
-function getYtDlpArgs(client) {
+function getYtDlpArgs() {
     return [
-        ...YTDLP_BASE_ARGS,
-
-        "--extractor-args",
-        `youtube:player_client=${client}`
+        ...YTDLP_BASE_ARGS
     ];
 }
 
@@ -213,7 +206,7 @@ function ytDlpInfo(url) {
     // Info/search only. We use a conservative client and NEVER
     // force android_vr.
     return ytdlp.getInfoAsync(url, {
-        rawArgs: getYtDlpArgs("web_safari")
+        rawArgs: getYtDlpArgs()
     });
 }
 
@@ -350,35 +343,25 @@ function normalizeYouTubeUrl(input) {
 // ======================================================
 
 async function ytDlpInfoWithFallback(url) {
-    let lastError = null;
+    try {
+        console.log(
+            "🔎 Extraction infos YouTube avec sélection automatique yt-dlp..."
+        );
 
-    for (const client of STREAM_CLIENTS) {
-        try {
-            console.log(
-                `🔎 Extraction infos avec client ${client}...`
-            );
-
-            return await ytdlp.getInfoAsync(
-                url,
-                {
-                    rawArgs: getYtDlpArgs(client)
-                }
-            );
-        } catch (error) {
-            lastError = error;
-
-            console.log(
-                `⚠️ Infos indisponibles avec ${client}.`
-            );
-        }
+        return await ytdlp.getInfoAsync(
+            url,
+            {
+                rawArgs: getYtDlpArgs()
+            }
+        );
+    } catch (error) {
+        throw (
+            error ||
+            new Error(
+                "Impossible de récupérer les informations YouTube."
+            )
+        );
     }
-
-    throw (
-        lastError ||
-        new Error(
-            "Impossible de récupérer les informations YouTube."
-        )
-    );
 }
 
 // ======================================================
@@ -954,7 +937,7 @@ function cleanupFFmpeg(data) {
 // toute sa lecture.
 // ======================================================
 
-function createYouTubeProcess(url, client, outputFile) {
+function createYouTubeProcess(url, outputFile) {
     if (!fs.existsSync(YTDLP_PATH)) {
         throw new Error(
             `yt-dlp introuvable : ${YTDLP_PATH}`
@@ -962,7 +945,7 @@ function createYouTubeProcess(url, client, outputFile) {
     }
 
     const args = [
-        ...getYtDlpArgs(client),
+        ...getYtDlpArgs(),
 
         "--format",
         "bestaudio/best",
@@ -976,7 +959,7 @@ function createYouTubeProcess(url, client, outputFile) {
     ];
 
     console.log(
-        `🎧 Téléchargement local yt-dlp client=${client}`
+        "🎧 Téléchargement local yt-dlp (client automatique)"
     );
 
     const child = spawn(
@@ -1225,14 +1208,7 @@ async function playTrack(guildId, track) {
     const generation =
         ++data.generation;
 
-    const clientIndex =
-        Math.min(
-            data.streamAttempt - 1,
-            STREAM_CLIENTS.length - 1
-        );
-
-    const client =
-        STREAM_CLIENTS[clientIndex];
+    const client = "auto";
 
     console.log(
         `▶️ Lecture : ${track.title}`
@@ -1289,22 +1265,9 @@ async function playTrack(guildId, track) {
         // uniquement si on veut le rejouer via retryTrack.
         cleanupAudioFile(currentData);
 
-        // Nouveau client / nouveau téléchargement.
-        if (
-            currentData.streamAttempt <
-            STREAM_CLIENTS.length
-        ) {
-            await playTrack(
-                guildId,
-                track
-            );
-
-            return;
-        }
-
-        currentData.streamAttempt =
-            0;
-
+        // Une seule tentative avec la sélection automatique de yt-dlp.
+        // On passe au mécanisme de fallback sans relancer le même morceau
+        // en boucle.
         await retryTrack(
             guildId,
             track
@@ -1347,7 +1310,6 @@ async function playTrack(guildId, track) {
         ytdlpProcess =
             createYouTubeProcess(
                 track.url,
-                client,
                 audioFile
             );
 
