@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "category": "Gaming",
+    "question": "Quel est le jeu vidéo le plus vendu de tous les temps ?",
+    "answers": [
+      "Minecraft",
+      "GTA V",
+      "Fortnite",
+      "Roblox"
+    ],
+    "correct": 0,
+    "reward": 100
+  },
+  {
+    "id": 2,
+    "category": "League of Legends",
+    "question": "Quel champion est surnommé le Maître des Ombres ?",
+    "answers": [
+      "Zed",
+      "Yasuo",
+      "Kayn",
+      "Lee Sin"
+    ],
+    "correct": 0,
+    "reward": 120
+  },
+  {
+    "id": 3,
+    "category": "Minecraft",
+    "question": "Quel bloc faut-il pour fabriquer une table d'enchantement ?",
+    "answers": [
+      "Diamant",
+      "Obsidienne",
+      "Lapis-Lazuli",
+      "Émeraude"
+    ],
+    "correct": 1,
+    "reward": 80
+  },
+  {
+    "id": 4,
+    "category": "Football",
+    "question": "Quel pays a remporté la Coupe du Monde 2018 ?",
+    "answers": [
+      "France",
+      "Argentine",
+      "Brésil",
+      "Croatie"
+    ],
+    "correct": 0,
+    "reward": 150
+  },
+  {
+    "id": 5,
+    "category": "Cinéma",
+    "question": "Qui est le créateur de Star Wars ?",
+    "answers": [
+      "Steven Spielberg",
+      "James Cameron",
+      "George Lucas",
+      "Christopher Nolan"
+    ],
+    "correct": 2,
+    "reward": 150
+  }
+]

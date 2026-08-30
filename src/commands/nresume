@@ -1,0 +1,32 @@
+const {
+    resumeMusic
+} = require("../services/musicPlayer");
+
+module.exports = {
+
+    name: "resume",
+
+    description: "Reprend la musique.",
+
+    async execute(message) {
+
+        const success =
+            resumeMusic(
+                message.guild.id
+            );
+
+        if (!success) {
+
+            return message.reply(
+                "❌ Aucune musique en pause."
+            );
+
+        }
+
+        return message.reply(
+            "▶️ Musique reprise."
+        );
+
+    }
+
+};

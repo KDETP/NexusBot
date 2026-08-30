@@ -1,0 +1,21 @@
+[
+  {
+    "type": "message",
+    "content": "😴 Ça devient calme... Qui est chaud pour un quiz ? 👀"
+  },
+  {
+    "type": "message",
+    "content": "🎮 Quel jeu vous occupe le plus aujourd'hui ?"
+  },
+  {
+    "type": "message",
+    "content": "😂 Racontez-moi votre pire game 😭"
+  },
+  {
+    "type": "quiz"
+  },
+  {
+    "type": "money",
+    "amount": 250
+  }
+]
