@@ -12,9 +12,7 @@ function getLavalinkManager(channel) {
     const client = channel?.client;
 
     if (!client?.lavalink) {
-        throw new Error(
-            "Lavalink n'est pas initialisé."
-        );
+        throw new Error("Lavalink n'est pas initialisé.");
     }
 
     return client.lavalink;
@@ -28,15 +26,10 @@ function getLavalinkManager(channel) {
 function isUrl(text) {
 
     try {
-
         new URL(text);
-
         return true;
-
     } catch {
-
         return false;
-
     }
 
 }
@@ -48,15 +41,12 @@ function formatTrack(track, requester = null) {
         return null;
     }
 
-    const info =
-        track.info || {};
+    const info = track.info || {};
 
     return {
 
-        // Track Lavalink original
         lavalinkTrack: track,
 
-        // Infos utilisées par ton bot
         title:
             info.title ||
             "Musique",
@@ -97,21 +87,14 @@ function getGuildPlayer(voiceChannel) {
     let data =
         guildPlayers.get(guildId);
 
-
     if (data) {
-
-        // Si le joueur existe mais que le salon vocal
-        // a changé, on le reconnectera dans playMusic().
         return data;
-
     }
-
 
     const manager =
         getLavalinkManager(
             voiceChannel
         );
-
 
     const player =
         manager.createPlayer({
@@ -135,7 +118,6 @@ function getGuildPlayer(voiceChannel) {
 
         });
 
-
     data = {
 
         player,
@@ -152,12 +134,10 @@ function getGuildPlayer(voiceChannel) {
 
     };
 
-
     guildPlayers.set(
         guildId,
         data
     );
-
 
     return data;
 
@@ -176,8 +156,6 @@ async function ensureVoiceConnection(
     const player =
         data.player;
 
-
-    // Le joueur est déjà dans le bon salon.
     if (
         player.connected &&
         player.voiceChannelId ===
@@ -188,9 +166,6 @@ async function ensureVoiceConnection(
 
     }
 
-
-    // Si le joueur existe mais est dans
-    // un autre salon, on le déplace.
     if (
         player.connected &&
         player.voiceChannelId !==
@@ -205,8 +180,6 @@ async function ensureVoiceConnection(
 
     }
 
-
-    // Première connexion.
     await player.connect();
 
 }
@@ -226,20 +199,13 @@ async function searchTrack(
         `🔎 Recherche Lavalink : ${query}`
     );
 
-
-    const searchQuery =
-        isUrl(query)
-            ? query
-            : query;
-
-
     const result =
         await player.search(
 
             {
 
                 query:
-                    searchQuery,
+                    query,
 
                 source:
                     isUrl(query)
@@ -251,7 +217,6 @@ async function searchTrack(
             requester
 
         );
-
 
     if (
         !result ||
@@ -265,11 +230,9 @@ async function searchTrack(
 
     }
 
-
     console.log(
         `🎵 ${result.tracks.length} résultat(s) Lavalink trouvé(s).`
     );
-
 
     return result.tracks[0];
 
@@ -290,7 +253,6 @@ async function playMusic(
         String(query || "")
             .trim();
 
-
     if (!query) {
 
         throw new Error(
@@ -299,18 +261,14 @@ async function playMusic(
 
     }
 
-
     const data =
         getGuildPlayer(
             voiceChannel
         );
 
-
     const player =
         data.player;
 
-
-    // Annuler une éventuelle déconnexion.
     if (data.idleTimeout) {
 
         clearTimeout(
@@ -322,20 +280,10 @@ async function playMusic(
 
     }
 
-
-    // ==================================================
-    // CONNEXION AU VOCAL
-    // ==================================================
-
     await ensureVoiceConnection(
         voiceChannel,
         data
     );
-
-
-    // ==================================================
-    // RECHERCHE
-    // ==================================================
 
     const lavalinkTrack =
         await searchTrack(
@@ -344,13 +292,11 @@ async function playMusic(
             requester
         );
 
-
     const track =
         formatTrack(
             lavalinkTrack,
             requester
         );
-
 
     if (!track) {
 
@@ -360,30 +306,14 @@ async function playMusic(
 
     }
 
-
-    // Garder le track Lavalink.
-    track.lavalinkTrack =
-        lavalinkTrack;
-
-
-    // ==================================================
-    // AJOUT À LA FILE
-    // ==================================================
-
     const wasPlaying =
         player.playing ||
         player.paused ||
         !!player.queue.current;
 
-
     await player.queue.add(
         lavalinkTrack
     );
-
-
-    // ==================================================
-    // RIEN NE JOUE
-    // ==================================================
 
     if (!wasPlaying) {
 
@@ -392,14 +322,7 @@ async function playMusic(
         data.current =
             track;
 
-    }
-
-
-    // ==================================================
-    // UNE MUSIQUE JOUE DÉJÀ
-    // ==================================================
-
-    else {
+    } else {
 
         data.queue.push(
             track
@@ -407,11 +330,9 @@ async function playMusic(
 
     }
 
-
     console.log(
         `🎶 Musique ajoutée : ${track.title}`
     );
-
 
     return {
 
@@ -426,7 +347,7 @@ async function playMusic(
 
 
 // ======================================================
-// SYNCHRONISATION DE LA QUEUE
+// SYNCHRONISATION QUEUE
 // ======================================================
 
 function syncQueueData(
@@ -438,17 +359,12 @@ function syncQueueData(
             guildId
         );
 
-
     if (!data) {
-
         return;
-
     }
-
 
     const player =
         data.player;
-
 
     data.current =
         player.queue.current
@@ -457,7 +373,6 @@ function syncQueueData(
                 player.queue.current.requester
             )
             : null;
-
 
     data.queue =
         player.queue.tracks.map(
@@ -487,14 +402,9 @@ function setupLavalinkEvents(
 
     }
 
-
     manager.__nexusMusicEvents =
         true;
 
-
-    // ----------------------------------------------
-    // TRACK START
-    // ----------------------------------------------
 
     manager.on(
         "trackStart",
@@ -508,18 +418,15 @@ function setupLavalinkEvents(
                     player.guildId
                 );
 
-
             if (!data) {
                 return;
             }
-
 
             data.current =
                 formatTrack(
                     track,
                     track.requester
                 );
-
 
             console.log(
                 `▶️ Lecture : ${track.info?.title || "Musique"}`
@@ -528,10 +435,6 @@ function setupLavalinkEvents(
         }
     );
 
-
-    // ----------------------------------------------
-    // TRACK END
-    // ----------------------------------------------
 
     manager.on(
         "trackEnd",
@@ -545,21 +448,16 @@ function setupLavalinkEvents(
                     player.guildId
                 );
 
-
             if (!data) {
                 return;
             }
-
 
             console.log(
                 `⏹️ Musique terminée : ${track.info?.title || "Musique"}`
             );
 
-
             if (data.loop) {
 
-                // On remet la musique terminée
-                // en tête de la queue.
                 player.queue.add(
                     track,
                     0
@@ -569,7 +467,6 @@ function setupLavalinkEvents(
 
             }
 
-
             syncQueueData(
                 player.guildId
             );
@@ -577,10 +474,6 @@ function setupLavalinkEvents(
         }
     );
 
-
-    // ----------------------------------------------
-    // TRACK ERROR
-    // ----------------------------------------------
 
     manager.on(
         "trackError",
@@ -602,10 +495,6 @@ function setupLavalinkEvents(
     );
 
 
-    // ----------------------------------------------
-    // TRACK STUCK
-    // ----------------------------------------------
-
     manager.on(
         "trackStuck",
         (
@@ -626,10 +515,6 @@ function setupLavalinkEvents(
     );
 
 
-    // ----------------------------------------------
-    // QUEUE END
-    // ----------------------------------------------
-
     manager.on(
         "queueEnd",
         player => {
@@ -639,24 +524,19 @@ function setupLavalinkEvents(
                     player.guildId
                 );
 
-
             if (!data) {
                 return;
             }
 
-
             data.current =
                 null;
-
 
             data.queue =
                 [];
 
-
             console.log(
                 "📭 File musicale terminée."
             );
-
 
             if (
                 data.idleTimeout
@@ -668,7 +548,6 @@ function setupLavalinkEvents(
 
             }
 
-
             data.idleTimeout =
                 setTimeout(
                     async () => {
@@ -678,15 +557,9 @@ function setupLavalinkEvents(
                                 player.guildId
                             );
 
-
-                        if (
-                            !currentData
-                        ) {
-
+                        if (!currentData) {
                             return;
-
                         }
-
 
                         if (
                             player.playing ||
@@ -701,11 +574,9 @@ function setupLavalinkEvents(
 
                         }
 
-
                         console.log(
                             `👋 Déconnexion du serveur ${player.guildId}.`
                         );
-
 
                         try {
 
@@ -720,7 +591,6 @@ function setupLavalinkEvents(
                             player.destroy();
 
                         } catch {}
-
 
                         guildPlayers.delete(
                             player.guildId
@@ -739,25 +609,16 @@ function setupLavalinkEvents(
 
 
 // ======================================================
-// INITIALISATION DES EVENTS
+// UTILITAIRE PLAYER
 // ======================================================
 
 function getPlayerData(
     guildId
 ) {
 
-    const data =
-        guildPlayers.get(
-            guildId
-        );
-
-
-    if (!data) {
-        return null;
-    }
-
-
-    return data;
+    return guildPlayers.get(
+        guildId
+    ) || null;
 
 }
 
@@ -775,11 +636,9 @@ async function pauseMusic(
             guildId
         );
 
-
     if (!data) {
         return false;
     }
-
 
     await data.player.pause();
 
@@ -801,11 +660,9 @@ async function resumeMusic(
             guildId
         );
 
-
     if (!data) {
         return false;
     }
-
 
     await data.player.resume();
 
@@ -827,11 +684,9 @@ async function skipMusic(
             guildId
         );
 
-
     if (!data) {
         return false;
     }
-
 
     try {
 
@@ -864,11 +719,9 @@ async function stopMusic(
             guildId
         );
 
-
     if (!data) {
         return false;
     }
-
 
     try {
 
@@ -879,18 +732,14 @@ async function stopMusic(
 
     } catch {}
 
-
     data.current =
         null;
-
 
     data.queue =
         [];
 
-
     data.loop =
         false;
-
 
     if (
         data.idleTimeout
@@ -902,10 +751,8 @@ async function stopMusic(
 
     }
 
-
     data.idleTimeout =
         null;
-
 
     return true;
 
@@ -925,7 +772,6 @@ function getQueue(
             guildId
         );
 
-
     if (!data) {
 
         return {
@@ -938,10 +784,8 @@ function getQueue(
 
     }
 
-
     const player =
         data.player;
-
 
     return {
 
@@ -981,15 +825,12 @@ async function setVolume(
             guildId
         );
 
-
     if (!data) {
         return false;
     }
 
-
     const numericVolume =
         Number(volume);
-
 
     if (
         !Number.isFinite(
@@ -1001,7 +842,6 @@ async function setVolume(
 
     }
 
-
     const finalVolume =
         Math.max(
             0,
@@ -1011,15 +851,12 @@ async function setVolume(
             )
         );
 
-
     await data.player.setVolume(
         finalVolume
     );
 
-
     data.volume =
         finalVolume;
-
 
     return true;
 
@@ -1039,22 +876,12 @@ async function toggleLoop(
             guildId
         );
 
-
     if (!data) {
         return false;
     }
 
-
     data.loop =
         !data.loop;
-
-
-    // Lavalink ne doit pas répéter lui-même
-    // puisqu'on gère le loop avec trackEnd.
-    await data.player.setRepeatMode(
-        "off"
-    );
-
 
     return data.loop;
 
@@ -1062,17 +889,27 @@ async function toggleLoop(
 
 
 // ======================================================
-// EXPORT
+// EXPORTS
 // ======================================================
 
 module.exports = {
+
     playMusic,
+
     pauseMusic,
+
     resumeMusic,
+
     skipMusic,
+
     stopMusic,
+
     getQueue,
+
     setVolume,
+
     toggleLoop,
+
     setupLavalinkEvents
+
 };
