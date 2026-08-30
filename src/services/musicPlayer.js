@@ -231,7 +231,7 @@ async function searchYouTube(query) {
         );
     }
 
-    const tracks = search.entries
+    const candidates = search.entries
         .filter(Boolean)
         .map(video => {
             const url =
@@ -258,12 +258,98 @@ async function searchYouTube(query) {
         })
         .filter(Boolean);
 
-    if (!tracks.length) {
+    if (!candidates.length) {
         throw new Error("Aucun résultat YouTube valide.");
     }
 
+    // Vérifie réellement les résultats avant de les donner au lecteur.
+    // Une vidéo peut apparaître dans les résultats mais être "unavailable"
+    // lorsqu'on demande ses informations directement.
+    const tracks = [];
+
+    for (const candidate of candidates) {
+        try {
+            const info = await ytdlp.getInfoAsync(
+                candidate.url,
+                {
+                    rawArgs: getYtDlpArgs()
+                }
+            );
+
+            if (!info) {
+                throw new Error("Informations YouTube absentes.");
+            }
+
+            if (
+                info._type === "playlist" &&
+                info.entries &&
+                !info.entries.length
+            ) {
+                throw new Error("Playlist vide.");
+            }
+
+            const hasPlayableFormat =
+                Array.isArray(info.formats) &&
+                info.formats.some(format =>
+                    format &&
+                    (
+                        format.acodec &&
+                        format.acodec !== "none"
+                    )
+                );
+
+            if (!hasPlayableFormat) {
+                throw new Error("Aucun format audio disponible.");
+            }
+
+            tracks.push({
+                title:
+                    info.title ||
+                    candidate.title ||
+                    query,
+
+                url:
+                    info.webpage_url ||
+                    info.original_url ||
+                    candidate.url,
+
+                thumbnail:
+                    info.thumbnail ||
+                    candidate.thumbnail ||
+                    null,
+
+                duration:
+                    info.duration ||
+                    candidate.duration ||
+                    0,
+
+                requester: null,
+                source: "YouTube"
+            });
+
+            console.log(
+                `✅ Résultat lisible : ${tracks[tracks.length - 1].title}`
+            );
+        } catch (error) {
+            console.log(
+                `⏭️ Résultat ignoré (indisponible) : ${candidate.title}`
+            );
+        }
+    }
+
+    if (!tracks.length) {
+        throw new Error(
+            `Aucun résultat YouTube lisible pour "${query}".`
+        );
+    }
+
+    // Conserve la liste des autres résultats valides pour le fallback,
+    // mais ces résultats ont déjà été vérifiés.
+    const first = tracks[0];
+    first.alternatives = tracks.slice(1);
+
     console.log(
-        `🎵 ${tracks.length} résultat(s) trouvé(s).`
+        `🎵 ${tracks.length} résultat(s) lisible(s) trouvé(s).`
     );
 
     tracks.forEach((track, index) => {
@@ -1114,19 +1200,20 @@ async function retryTrack(guildId, track) {
     }
 
     // ==================================================
-    // RETRY CLIENTS / NOUVEAU TÉLÉCHARGEMENT
+    // RETRY DU MÊME MORCEAU
     // ==================================================
+    // Aucun retry aveugle : les résultats alternatifs ont déjà
+    // été validés avant d'être proposés au lecteur.
 
     if (
-        data.streamAttempt <
-        MAX_STREAM_ATTEMPTS
+        data.streamAttempt < MAX_STREAM_ATTEMPTS &&
+        (!track.alternatives || !track.alternatives.length)
     ) {
         console.log(
-            `🔁 Nouveau téléchargement : ${track.title}`
+            `🔁 Nouvelle tentative unique : ${track.title}`
         );
 
-        data.processing =
-            false;
+        data.processing = false;
 
         cleanupAudioFile(data);
 
@@ -1251,7 +1338,7 @@ async function playTrack(guildId, track) {
         }
 
         console.error(
-            `❌ Échec lecture (${client}) :`,
+            `❌ Échec lecture (auto) :`,
             error?.message ||
                 error
         );
