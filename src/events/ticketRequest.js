@@ -8,19 +8,25 @@ const {
 } = require("discord.js");
 
 
+// ==========================================
+// CATÉGORIE DES TICKETS
+// ==========================================
+
 const ticketCategory =
     "1535332776566460426";
 
 
+// ==========================================
+// RÔLES STAFF
+// ==========================================
+
 const staffRoles = [
 
-    "1457855405370900662",
-    "1415339900445786183",
-    "1465840162524102749",
-    "1415340033627525201",
-    "1415339976886980649",
-    "1415339840198938664",
-    "1415339765657764002"
+    "1457855405370900662", // 👑 Couronne
+    "1452142914099478630", // •
+    "1415339765657764002", // 🛡️ Staff basic
+    "1415339840198938664", // 👑 Admin
+    "1415339900445786183"  // 🛡️ Responsable Staff
 
 ];
 
@@ -37,6 +43,11 @@ module.exports = async (
     client,
     interaction
 ) => {
+
+
+    // ==========================================
+    // VÉRIFICATION BOUTON
+    // ==========================================
 
     if (
         !interaction.isButton()
@@ -179,6 +190,10 @@ module.exports = async (
         }
 
 
+        // ======================================
+        // RÉCUPÉRER LE MEMBRE
+        // ======================================
+
         const member =
             await interaction.guild.members.fetch(
                 userId[1]
@@ -297,9 +312,6 @@ module.exports = async (
         // RÉCUPÉRATION DES RÔLES STAFF
         // ======================================
 
-        await interaction.guild.roles.fetch();
-
-
         const validStaffRoles = [];
 
 
@@ -352,8 +364,12 @@ module.exports = async (
 
                 permissionOverwrites: [
 
-                    // @everyone
+                    // ==================================
+                    // @EVERYONE
+                    // ==================================
+
                     {
+
                         id:
                             interaction.guild.roles.everyone,
 
@@ -366,8 +382,12 @@ module.exports = async (
                     },
 
 
-                    // Créateur du ticket
+                    // ==================================
+                    // CRÉATEUR DU TICKET
+                    // ==================================
+
                     {
+
                         id:
                             member,
 
@@ -382,8 +402,12 @@ module.exports = async (
                     },
 
 
-                    // Staff ayant accepté
+                    // ==================================
+                    // STAFF QUI ACCEPTE
+                    // ==================================
+
                     {
+
                         id:
                             interaction.member,
 
@@ -398,7 +422,10 @@ module.exports = async (
                     },
 
 
-                    // Rôles staff valides
+                    // ==================================
+                    // RÔLES STAFF
+                    // ==================================
+
                     ...validStaffRoles.map(
                         role => ({
 
