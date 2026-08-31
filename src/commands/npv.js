@@ -21,6 +21,7 @@ const PRIVATE_VOICE_ROLES = [
 module.exports = {
 
     name: "pv",
+    name: "lock",
 
     description:
         "Rendre le vocal privé.",
