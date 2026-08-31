@@ -1,10 +1,11 @@
 const {
-    PermissionFlagsBits
+    PermissionFlagsBits,
+    OverwriteType
 } = require("discord.js");
 
 
 // ==========================================
-// RÔLES AUTORISÉS À UTILISER NPV / LOCK
+// RÔLES AUTORISÉS À UTILISER NPV
 // ==========================================
 
 const PRIVATE_VOICE_ROLES = [
@@ -24,7 +25,7 @@ const PRIVATE_VOICE_ROLES = [
 
 module.exports = {
 
-    name: "lock",
+    name: "npv",
 
     description:
         "Rendre le vocal privé.",
@@ -32,8 +33,9 @@ module.exports = {
 
     async execute(message) {
 
+
         // ======================================
-        // PERMISSION COMMANDE
+        // VÉRIFICATION DES PERMISSIONS
         // ======================================
 
         const allowed =
@@ -55,7 +57,7 @@ module.exports = {
 
 
         // ======================================
-        // VÉRIFIER LE VOCAL
+        // RÉCUPÉRER LE VOCAL
         // ======================================
 
         const voiceChannel =
@@ -71,17 +73,15 @@ module.exports = {
         }
 
 
-        // ======================================
-        // PRIVATISER LE VOCAL
-        // ======================================
-
         try {
 
+
             // ==================================
-            // RÉCUPÉRER LES RÔLES
+            // RÉCUPÉRER LES RÔLES EXISTANTS
             // ==================================
 
             const validRoles = [];
+
 
             for (
                 const roleId of PRIVATE_VOICE_ROLES
@@ -95,7 +95,9 @@ module.exports = {
 
                 if (role) {
 
-                    validRoles.push(role);
+                    validRoles.push(
+                        role
+                    );
 
                 } else {
 
@@ -109,33 +111,65 @@ module.exports = {
 
 
             // ==================================
-            // BLOQUER @EVERYONE
+            // CONSTRUIRE LES PERMISSIONS
             // ==================================
 
-            await voiceChannel.permissionOverwrites.edit(
-                message.guild.roles.everyone,
+            const overwrites = [
+
+                // @everyone
                 {
-                    [PermissionFlagsBits.Connect]: false
+
+                    id:
+                        message.guild.id,
+
+                    type:
+                        OverwriteType.Role,
+
+                    deny: [
+
+                        PermissionFlagsBits.Connect
+
+                    ]
+
                 }
-            );
+
+            ];
 
 
             // ==================================
-            // AUTORISER LES RÔLES VALIDES
+            // AUTORISER LES RÔLES STAFF
             // ==================================
 
             for (
                 const role of validRoles
             ) {
 
-                await voiceChannel.permissionOverwrites.edit(
-                    role,
-                    {
-                        [PermissionFlagsBits.Connect]: true
-                    }
-                );
+                overwrites.push({
+
+                    id:
+                        role.id,
+
+                    type:
+                        OverwriteType.Role,
+
+                    allow: [
+
+                        PermissionFlagsBits.Connect
+
+                    ]
+
+                });
 
             }
+
+
+            // ==================================
+            // APPLIQUER LES PERMISSIONS
+            // ==================================
+
+            await voiceChannel.permissionOverwrites.set(
+                overwrites
+            );
 
 
             // ==================================
