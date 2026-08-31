@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 
-
 const statsPath = path.join(
     __dirname,
     "..",
@@ -9,118 +8,134 @@ const statsPath = path.join(
     "serverStats.json"
 );
 
-
-
 async function updateStats(guild) {
 
+    try {
 
-    if (!fs.existsSync(statsPath)) return;
+        if (!fs.existsSync(statsPath)) {
+            console.log("❌ serverStats.json introuvable.");
+            return;
+        }
 
+        const stats = JSON.parse(
+            fs.readFileSync(statsPath, "utf8")
+        );
 
-    const stats = JSON.parse(
-        fs.readFileSync(statsPath, "utf8")
-    );
+        // Récupère tous les membres
+        await guild.members.fetch();
 
+        const total = guild.memberCount;
 
+        const members = guild.members.cache.filter(
+            member => !member.user.bot
+        ).size;
 
-    await guild.members.fetch();
+        const bots = guild.members.cache.filter(
+            member => member.user.bot
+        ).size;
 
+        const totalChannel =
+            guild.channels.cache.get(stats.total);
 
+        const membersChannel =
+            guild.channels.cache.get(stats.members);
 
-    const total = guild.memberCount;
-
-
-    const members = guild.members.cache.filter(
-        m => !m.user.bot
-    ).size;
-
-
-    const bots = guild.members.cache.filter(
-        m => m.user.bot
-    ).size;
-
-
-
-    const totalChannel = guild.channels.cache.get(
-        stats.total
-    );
-
-    const membersChannel = guild.channels.cache.get(
-        stats.members
-    );
-
-    const botsChannel = guild.channels.cache.get(
-        stats.bots
-    );
+        const botsChannel =
+            guild.channels.cache.get(stats.bots);
 
 
+        // 🌎 TOTAL
+        if (totalChannel) {
 
-    if (totalChannel) {
+            const name = `🌎 Total : ${total}`;
 
-        await totalChannel.setName(
-            `🌎 Total : ${total}`
+            if (totalChannel.name !== name) {
+                await totalChannel.setName(name);
+            }
+
+        }
+
+
+        // 👥 MEMBRES
+        if (membersChannel) {
+
+            const name = `👥 Membres : ${members}`;
+
+            if (membersChannel.name !== name) {
+                await membersChannel.setName(name);
+            }
+
+        }
+
+
+        // 🤖 BOTS
+        if (botsChannel) {
+
+            const name = `🤖 Bots : ${bots}`;
+
+            if (botsChannel.name !== name) {
+                await botsChannel.setName(name);
+            }
+
+        }
+
+
+        console.log(
+            `📊 Stats mises à jour : ${total} total | ${members} membres | ${bots} bots`
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Erreur lors de la mise à jour des stats :",
+            error
         );
 
     }
-
-
-    if (membersChannel) {
-
-        await membersChannel.setName(
-            `👥 Membres : ${members}`
-        );
-
-    }
-
-
-    if (botsChannel) {
-
-        await botsChannel.setName(
-            `🤖 Bots : ${bots}`
-        );
-
-    }
-
 
 }
 
 
-
 module.exports = async (client) => {
 
+    // ======================================
+    // BOT PRÊT
+    // ======================================
 
+    client.once("clientReady", async () => {
 
-    client.on(
-        "guildMemberAdd",
-        member => {
+        console.log("📊 Synchronisation des statistiques...");
 
-            updateStats(member.guild);
+        for (const guild of client.guilds.cache.values()) {
 
-        }
-    );
-
-
-
-    client.on(
-        "guildMemberRemove",
-        member => {
-
-            updateStats(member.guild);
+            await updateStats(guild);
 
         }
-    );
+
+        console.log("✅ Statistiques synchronisées.");
+
+    });
 
 
+    // ======================================
+    // NOUVEAU MEMBRE
+    // ======================================
 
-    // Mise à jour au démarrage
+    client.on("guildMemberAdd", async (member) => {
 
-    client.guilds.cache.forEach(
-        guild => {
+        await updateStats(member.guild);
 
-            updateStats(guild);
+    });
 
-        }
-    );
 
+    // ======================================
+    // MEMBRE QUI PART
+    // ======================================
+
+    client.on("guildMemberRemove", async (member) => {
+
+        await updateStats(member.guild);
+
+    });
 
 };
