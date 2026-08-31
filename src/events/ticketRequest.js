@@ -38,7 +38,6 @@ module.exports = async (
     interaction
 ) => {
 
-
     if (
         !interaction.isButton()
     ) {
@@ -264,6 +263,74 @@ module.exports = async (
 
 
         // ======================================
+        // RÉCUPÉRATION DE LA CATÉGORIE
+        // ======================================
+
+        const category =
+            await interaction.guild.channels
+                .fetch(ticketCategory)
+                .catch(() => null);
+
+
+        if (!category) {
+
+            return interaction.editReply(
+                "❌ La catégorie des tickets est introuvable."
+            );
+
+        }
+
+
+        if (
+            category.type !==
+            ChannelType.GuildCategory
+        ) {
+
+            return interaction.editReply(
+                "❌ L'ID configuré pour la catégorie des tickets n'est pas une catégorie."
+            );
+
+        }
+
+
+        // ======================================
+        // RÉCUPÉRATION DES RÔLES STAFF
+        // ======================================
+
+        await interaction.guild.roles.fetch();
+
+
+        const validStaffRoles = [];
+
+
+        for (
+            const roleId of staffRoles
+        ) {
+
+            const role =
+                await interaction.guild.roles
+                    .fetch(roleId)
+                    .catch(() => null);
+
+
+            if (role) {
+
+                validStaffRoles.push(
+                    role
+                );
+
+            } else {
+
+                console.warn(
+                    `⚠️ Rôle staff introuvable : ${roleId}`
+                );
+
+            }
+
+        }
+
+
+        // ======================================
         // CRÉATION DU SALON
         // ======================================
 
@@ -278,17 +345,17 @@ module.exports = async (
                     ChannelType.GuildText,
 
                 parent:
-                    ticketCategory,
+                    category,
 
                 topic:
                     `Demandeur:${member.id} | Staff:${interaction.user.id}`,
 
                 permissionOverwrites: [
 
+                    // @everyone
                     {
-
                         id:
-                            interaction.guild.id,
+                            interaction.guild.roles.everyone,
 
                         deny: [
 
@@ -298,10 +365,11 @@ module.exports = async (
 
                     },
 
-                    {
 
+                    // Créateur du ticket
+                    {
                         id:
-                            member.id,
+                            member,
 
                         allow: [
 
@@ -313,10 +381,11 @@ module.exports = async (
 
                     },
 
-                    {
 
+                    // Staff ayant accepté
+                    {
                         id:
-                            interaction.user.id,
+                            interaction.member,
 
                         allow: [
 
@@ -328,7 +397,9 @@ module.exports = async (
 
                     },
 
-                    ...staffRoles.map(
+
+                    // Rôles staff valides
+                    ...validStaffRoles.map(
                         role => ({
 
                             id:
