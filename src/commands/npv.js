@@ -1,11 +1,10 @@
 const {
-    ChannelType,
     PermissionFlagsBits
 } = require("discord.js");
 
 
 // ==========================================
-// RÔLES AUTORISÉS À UTILISER LOCK / PV
+// RÔLES AUTORISÉS À UTILISER NPV / LOCK
 // ==========================================
 
 const PRIVATE_VOICE_ROLES = [
@@ -32,7 +31,6 @@ module.exports = {
 
 
     async execute(message) {
-
 
         // ======================================
         // PERMISSION COMMANDE
@@ -74,44 +72,40 @@ module.exports = {
 
 
         // ======================================
-        // RÉCUPÉRER LES RÔLES VALIDES
-        // ======================================
-
-        const validRoles = [];
-
-
-        for (
-            const roleId of PRIVATE_VOICE_ROLES
-        ) {
-
-            const role =
-                await message.guild.roles
-                    .fetch(roleId)
-                    .catch(() => null);
-
-
-            if (role) {
-
-                validRoles.push(
-                    role
-                );
-
-            } else {
-
-                console.warn(
-                    `⚠️ Rôle vocal introuvable : ${roleId}`
-                );
-
-            }
-
-        }
-
-
-        // ======================================
         // PRIVATISER LE VOCAL
         // ======================================
 
         try {
+
+            // ==================================
+            // RÉCUPÉRER LES RÔLES
+            // ==================================
+
+            const validRoles = [];
+
+            for (
+                const roleId of PRIVATE_VOICE_ROLES
+            ) {
+
+                const role =
+                    await message.guild.roles
+                        .fetch(roleId)
+                        .catch(() => null);
+
+
+                if (role) {
+
+                    validRoles.push(role);
+
+                } else {
+
+                    console.warn(
+                        `⚠️ Rôle NPV introuvable : ${roleId}`
+                    );
+
+                }
+
+            }
 
 
             // ==================================
@@ -121,13 +115,13 @@ module.exports = {
             await voiceChannel.permissionOverwrites.edit(
                 message.guild.roles.everyone,
                 {
-                    Connect: false
+                    [PermissionFlagsBits.Connect]: false
                 }
             );
 
 
             // ==================================
-            // AUTORISER LES RÔLES STAFF
+            // AUTORISER LES RÔLES VALIDES
             // ==================================
 
             for (
@@ -137,7 +131,7 @@ module.exports = {
                 await voiceChannel.permissionOverwrites.edit(
                     role,
                     {
-                        Connect: true
+                        [PermissionFlagsBits.Connect]: true
                     }
                 );
 
@@ -156,7 +150,7 @@ module.exports = {
         } catch (error) {
 
             console.error(
-                "❌ Erreur lock :",
+                "❌ Erreur npv :",
                 error
             );
 
