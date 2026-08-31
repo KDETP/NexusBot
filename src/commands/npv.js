@@ -1,26 +1,30 @@
 const {
-    ChannelType
+    ChannelType,
+    PermissionFlagsBits
 } = require("discord.js");
 
 
 // ==========================================
-// RÔLES AUTORISÉS À UTILISER NPV / NUPV
+// RÔLES AUTORISÉS À UTILISER LOCK / PV
 // ==========================================
 
 const PRIVATE_VOICE_ROLES = [
-    "1457855405370900662",
-    "1415339900445786183",
-    "1465840162524102749",
-    "1415340033627525201",
-    "1415339976886980649",
-    "1415339840198938664",
-    "1415339765657764002",
+
+    "1457855405370900662", // 👑 Couronne
+    "1452142914099478630", // •
+    "1415339765657764002", // 🛡️ Staff basic
+    "1415339840198938664", // 👑 Admin
+    "1415339900445786183"  // 🛡️ Responsable Staff
+
 ];
 
 
+// ==========================================
+// COMMANDE
+// ==========================================
+
 module.exports = {
 
-    name: "pv",
     name: "lock",
 
     description:
@@ -28,6 +32,7 @@ module.exports = {
 
 
     async execute(message) {
+
 
         // ======================================
         // PERMISSION COMMANDE
@@ -55,14 +60,49 @@ module.exports = {
         // VÉRIFIER LE VOCAL
         // ======================================
 
-        if (
-            message.channel.type !==
-            ChannelType.GuildVoice
-        ) {
+        const voiceChannel =
+            message.member.voice.channel;
+
+
+        if (!voiceChannel) {
 
             return message.reply(
-                "❌ Utilise cette commande dans le chat du salon vocal."
+                "❌ Tu dois être connecté à un salon vocal."
             );
+
+        }
+
+
+        // ======================================
+        // RÉCUPÉRER LES RÔLES VALIDES
+        // ======================================
+
+        const validRoles = [];
+
+
+        for (
+            const roleId of PRIVATE_VOICE_ROLES
+        ) {
+
+            const role =
+                await message.guild.roles
+                    .fetch(roleId)
+                    .catch(() => null);
+
+
+            if (role) {
+
+                validRoles.push(
+                    role
+                );
+
+            } else {
+
+                console.warn(
+                    `⚠️ Rôle vocal introuvable : ${roleId}`
+                );
+
+            }
 
         }
 
@@ -73,8 +113,12 @@ module.exports = {
 
         try {
 
-            // Bloque @everyone
-            await message.channel.permissionOverwrites.edit(
+
+            // ==================================
+            // BLOQUER @EVERYONE
+            // ==================================
+
+            await voiceChannel.permissionOverwrites.edit(
                 message.guild.roles.everyone,
                 {
                     Connect: false
@@ -82,13 +126,16 @@ module.exports = {
             );
 
 
-            // Autorise les 7 rôles
+            // ==================================
+            // AUTORISER LES RÔLES STAFF
+            // ==================================
+
             for (
-                const roleId of PRIVATE_VOICE_ROLES
+                const role of validRoles
             ) {
 
-                await message.channel.permissionOverwrites.edit(
-                    roleId,
+                await voiceChannel.permissionOverwrites.edit(
+                    role,
                     {
                         Connect: true
                     }
@@ -96,6 +143,10 @@ module.exports = {
 
             }
 
+
+            // ==================================
+            // RÉPONSE
+            // ==================================
 
             return message.reply(
                 "🔒 **Vocal privé !**\nSeuls les rôles autorisés peuvent rejoindre ce salon."
@@ -105,7 +156,7 @@ module.exports = {
         } catch (error) {
 
             console.error(
-                "❌ Erreur npv :",
+                "❌ Erreur lock :",
                 error
             );
 
