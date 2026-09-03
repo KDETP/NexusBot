@@ -136,7 +136,8 @@ module.exports = async (
         "casinoMenu",
         "moderationButtons",
         "kickButtons",
-        "banButtons"
+        "banButtons",
+        "giveawayButtons"
 
     ];
 

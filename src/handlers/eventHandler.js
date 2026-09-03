@@ -12,7 +12,7 @@ module.exports = (client) => {
             .filter(file => file.endsWith(".js"));
 
 
-    // Ces fichiers sont gérés par interactionCreate.js
+    // Ces fichiers sont gérés directement par interactionCreate.js
     const ignoredEvents = [
 
         "ticketButtons.js",
@@ -23,7 +23,6 @@ module.exports = (client) => {
 
 
     for (const file of eventFiles) {
-
 
         if (ignoredEvents.includes(file)) {
 
@@ -65,6 +64,17 @@ module.exports = (client) => {
             // ======================================
 
             case "serverStats.js":
+
+                event(client);
+
+            break;
+
+
+            // ======================================
+            // GIVEAWAY MANAGER
+            // ======================================
+
+            case "giveaway.js":
 
                 event(client);
 
@@ -115,6 +125,17 @@ module.exports = (client) => {
 
                 client.on(
                     "messageReactionAdd",
+                    (...args) =>
+                        event(client, ...args)
+                );
+
+            break;
+
+
+            case "messageReactionRemove.js":
+
+                client.on(
+                    "messageReactionRemove",
                     (...args) =>
                         event(client, ...args)
                 );
@@ -181,14 +202,12 @@ module.exports = (client) => {
 
             break;
 
-
         }
 
 
         console.log(
             `📥 Evénement chargé : ${file}`
         );
-
 
     }
 
