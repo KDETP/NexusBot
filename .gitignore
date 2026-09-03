@@ -1,2 +1,6 @@
 .env
 node_modules/
+
+src/data/profiles.json
+src/data/economy.json
+src/data/nexus.db
