@@ -5,6 +5,7 @@ const { EmbedBuilder } = require("discord.js");
 module.exports = {
 
     name: "balance",
+    name: "bal",
 
     async execute(message) {
 
