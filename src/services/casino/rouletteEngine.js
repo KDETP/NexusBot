@@ -1,34 +1,38 @@
-const { createCanvas } = require("canvas");
 const fs = require("fs");
-const { spawn } = require("child_process");
+const path = require("path");
+const GIFEncoder = require("gif-encoder-2");
+const { createCanvas } = require("canvas");
 
-// ======================================================
-// CONFIGURATION
-// ======================================================
 
-const WIDTH = 960;
-const HEIGHT = 540;
+// =====================================================
+// CONFIG
+// =====================================================
 
-const FPS = 30;
-const DURATION = 5.2;
+const WIDTH = 800;
+const HEIGHT = 500;
 
-const FFMPEG_PATH =
-    "C:\\Users\\ausxj\\Desktop\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe";
+const FPS = 20;
+const DURATION = 4.2;
 
-// ======================================================
-// ORDRE ROULETTE EUROPEENNE
-// ======================================================
+const TOTAL_FRAMES =
+    Math.round(FPS * DURATION);
+
+
+// =====================================================
+// ROUE EUROPÉENNE
+// =====================================================
 
 const WHEEL = [
-    0, 32, 15, 19, 4, 21, 2, 25, 17, 34,
-    6, 27, 13, 36, 11, 30, 8, 23, 10,
-    5, 24, 16, 33, 1, 20, 14, 31, 9,
-    22, 18, 29, 7, 28, 12, 35, 3, 26
+    0, 32, 15, 19, 4, 21, 2, 25, 17,
+    34, 6, 27, 13, 36, 11, 30, 8, 23,
+    10, 5, 24, 16, 33, 1, 20, 14, 31,
+    9, 22, 18, 29, 7, 28, 12, 35, 3, 26
 ];
 
-// ======================================================
-// NUMEROS ROUGES
-// ======================================================
+
+// =====================================================
+// ROUGE
+// =====================================================
 
 const RED = new Set([
     1, 3, 5, 7, 9,
@@ -37,9 +41,10 @@ const RED = new Set([
     30, 32, 34, 36
 ]);
 
-// ======================================================
+
+// =====================================================
 // COULEUR
-// ======================================================
+// =====================================================
 
 function getColor(number) {
 
@@ -52,186 +57,126 @@ function getColor(number) {
         : "noir";
 }
 
-// ======================================================
-// UTILITAIRES
-// ======================================================
 
-function clamp(
-    value,
-    min,
-    max
-) {
-    return Math.max(
-        min,
-        Math.min(
-            max,
-            value
-        )
+// =====================================================
+// EASING
+// =====================================================
+
+function easeOutCubic(t) {
+
+    t = Math.max(
+        0,
+        Math.min(1, t)
+    );
+
+    return 1 - Math.pow(
+        1 - t,
+        3
     );
 }
 
-function easeOut(
-    value
-) {
 
-    value =
-        clamp(
-            value,
-            0,
-            1
-        );
-
-    return (
-        1 -
-        Math.pow(
-            1 - value,
-            4
-        )
-    );
-}
-
-// ======================================================
-// VERIFICATION RESULTAT
-// ======================================================
-
-function validateResult(
-    number
-) {
-
-    number =
-        Number(number);
-
-    if (
-        !Number.isInteger(number) ||
-        number < 0 ||
-        number > 36
-    ) {
-
-        throw new Error(
-            `Résultat roulette invalide : ${number}`
-        );
-    }
-
-    return number;
-}
-
-// ======================================================
-// DESSIN D'UNE FRAME
-// ======================================================
+// =====================================================
+// DRAW FRAME
+// =====================================================
 
 function drawFrame(
     ctx,
     result,
-    frame,
-    totalFrames
+    frame
 ) {
 
     const t =
         frame /
         Math.max(
             1,
-            totalFrames - 1
+            TOTAL_FRAMES - 1
         );
 
-    const width =
-        WIDTH;
 
-    const height =
-        HEIGHT;
+    // =================================================
+    // BACKGROUND
+    // =================================================
 
-    // ==================================================
-    // FOND
-    // ==================================================
-
-    const background =
+    const bg =
         ctx.createLinearGradient(
             0,
             0,
             0,
-            height
+            HEIGHT
         );
 
-    background.addColorStop(
+    bg.addColorStop(
         0,
-        "#08060d"
+        "#090612"
     );
 
-    background.addColorStop(
-        0.55,
-        "#1b0d27"
+    bg.addColorStop(
+        0.5,
+        "#1b0d28"
     );
 
-    background.addColorStop(
+    bg.addColorStop(
         1,
         "#050308"
     );
 
     ctx.fillStyle =
-        background;
+        bg;
 
     ctx.fillRect(
         0,
         0,
-        width,
-        height
+        WIDTH,
+        HEIGHT
     );
 
-    // ==================================================
-    // LUMIERE CENTRALE
-    // ==================================================
 
-    const glow =
-        ctx.createRadialGradient(
-            width / 2,
-            height * 0.46,
-            20,
-            width / 2,
-            height * 0.46,
-            420
-        );
+    // =================================================
+    // TITRE
+    // =================================================
 
-    glow.addColorStop(
-        0,
-        "rgba(168,85,247,0.20)"
-    );
+    ctx.textAlign =
+        "center";
 
-    glow.addColorStop(
-        1,
-        "rgba(168,85,247,0)"
-    );
+    ctx.textBaseline =
+        "middle";
 
     ctx.fillStyle =
-        glow;
+        "#f7f1ff";
 
-    ctx.fillRect(
-        0,
-        0,
-        width,
-        height
+    ctx.font =
+        "bold 30px Arial";
+
+    ctx.fillText(
+        "NÉBUL ROULETTE",
+        WIDTH / 2,
+        32
     );
 
-    // ==================================================
+
+    // =================================================
     // TABLE
-    // ==================================================
+    // =================================================
 
     const table =
         ctx.createRadialGradient(
-            width / 2,
-            height * 0.72,
-            30,
-            width / 2,
-            height * 0.72,
-            500
+            WIDTH / 2,
+            350,
+            20,
+            WIDTH / 2,
+            350,
+            430
         );
 
     table.addColorStop(
         0,
-        "#185a35"
+        "#17623b"
     );
 
     table.addColorStop(
         1,
-        "#06150b"
+        "#06150d"
     );
 
     ctx.fillStyle =
@@ -240,195 +185,147 @@ function drawFrame(
     ctx.beginPath();
 
     ctx.roundRect(
-        35,
-        270,
-        width - 70,
-        240,
-        40
+        45,
+        280,
+        WIDTH - 90,
+        180,
+        35
     );
 
     ctx.fill();
 
-    // Bordure table
 
-    ctx.strokeStyle =
-        "rgba(215,169,77,0.25)";
+    // =================================================
+    // ROUE
+    // =================================================
 
-    ctx.lineWidth =
-        3;
+    const cx =
+        WIDTH / 2;
 
-    ctx.stroke();
+    const cy =
+        225;
 
-    // ==================================================
-    // ROULETTE
-    // ==================================================
+    const outer =
+        170;
 
-    const centerX =
-        width / 2;
-
-    const centerY =
-        245;
-
-    const outerRadius =
-        195;
-
-    const pocketRadius =
-        145;
+    const inner =
+        120;
 
     const step =
-        Math.PI * 2 /
+        (Math.PI * 2) /
         WHEEL.length;
 
+
     const targetIndex =
-        WHEEL.indexOf(
-            result
+        WHEEL.indexOf(result);
+
+
+    /*
+     * Le numéro gagnant doit arriver exactement
+     * sous le pointeur à la fin.
+     */
+
+    const finalRotation =
+        -(targetIndex * step);
+
+
+    const spins =
+        Math.PI * 2 * 7;
+
+
+    const rotation =
+        finalRotation +
+        spins *
+        (
+            1 -
+            easeOutCubic(t)
         );
 
-    const targetAngle =
-        -Math.PI / 2 +
-        targetIndex *
-        step;
 
-    let wheelRotation;
-    let ballAngle;
-
-    // ==================================================
-    // ANIMATION
-    // ==================================================
-
-    if (
-        t < 0.72
-    ) {
-
-        const progress =
-            t / 0.72;
-
-        wheelRotation =
-            Math.PI * 2 *
-            (
-                1.2 +
-                4.8 *
-                progress
-            );
-
-        ballAngle =
-            -Math.PI / 2 -
-            Math.PI * 2 *
-            7.5 *
-            progress;
-
-    } else {
-
-        const slow =
-            easeOut(
-                (
-                    t - 0.72
-                ) /
-                0.28
-            );
-
-        wheelRotation =
-            Math.PI * 2 * 6 +
-            Math.PI * 2 *
-            0.72 *
-            slow;
-
-        ballAngle =
-            targetAngle -
-            Math.PI * 2 *
-            0.75 *
-            (
-                1 -
-                slow
-            );
-    }
-
-    // ==================================================
-    // ROULETTE ROTATIVE
-    // ==================================================
+    // =================================================
+    // ROUE
+    // =================================================
 
     ctx.save();
 
     ctx.translate(
-        centerX,
-        centerY
+        cx,
+        cy
     );
 
     ctx.rotate(
-        wheelRotation
+        rotation
     );
 
-    // ==================================================
-    // COURONNE EXTERIEURE
-    // ==================================================
 
-    const rim =
+    // Couronne dorée
+    const gold =
         ctx.createRadialGradient(
             -30,
             -30,
             10,
             0,
             0,
-            outerRadius + 20
+            outer + 25
         );
 
-    rim.addColorStop(
+    gold.addColorStop(
         0,
-        "#f1d27c"
+        "#ffe7a1"
     );
 
-    rim.addColorStop(
+    gold.addColorStop(
         0.45,
-        "#b5791e"
+        "#cb9639"
     );
 
-    rim.addColorStop(
+    gold.addColorStop(
         0.8,
-        "#6b3f0d"
+        "#704710"
     );
 
-    rim.addColorStop(
+    gold.addColorStop(
         1,
-        "#d6ad55"
+        "#dcb45c"
     );
+
 
     ctx.beginPath();
 
     ctx.arc(
         0,
         0,
-        outerRadius + 18,
+        outer + 18,
         0,
         Math.PI * 2
     );
 
     ctx.fillStyle =
-        rim;
+        gold;
 
     ctx.fill();
 
-    // ==================================================
-    // BOIS
-    // ==================================================
 
+    // Fond
     ctx.beginPath();
 
     ctx.arc(
         0,
         0,
-        outerRadius,
+        outer,
         0,
         Math.PI * 2
     );
 
     ctx.fillStyle =
-        "#513019";
+        "#27170b";
 
     ctx.fill();
 
-    // ==================================================
+
+    // =================================================
     // CASES
-    // ==================================================
+    // =================================================
 
     for (
         let i = 0;
@@ -443,122 +340,112 @@ function drawFrame(
         const number =
             WHEEL[i];
 
+
         ctx.beginPath();
+
 
         ctx.moveTo(
             Math.cos(
-                angle - step / 2
+                angle -
+                step / 2
             ) *
-            (
-                outerRadius - 12
-            ),
+                outer,
 
             Math.sin(
-                angle - step / 2
+                angle -
+                step / 2
             ) *
-            (
-                outerRadius - 12
-            )
+                outer
         );
+
 
         ctx.arc(
             0,
             0,
-            outerRadius - 12,
+            outer,
             angle - step / 2,
             angle + step / 2
         );
 
+
         ctx.lineTo(
             Math.cos(
-                angle + step / 2
+                angle +
+                step / 2
             ) *
-            pocketRadius,
+                inner,
 
             Math.sin(
-                angle + step / 2
+                angle +
+                step / 2
             ) *
-            pocketRadius
+                inner
         );
+
 
         ctx.arc(
             0,
             0,
-            pocketRadius,
+            inner,
             angle + step / 2,
             angle - step / 2,
             true
         );
 
+
         ctx.closePath();
 
-        // Couleur case
 
-        if (
+        ctx.fillStyle =
             number === 0
-        ) {
+                ? "#0b9347"
+                : RED.has(number)
+                    ? "#a92330"
+                    : "#111111";
 
-            ctx.fillStyle =
-                "#0b8f43";
-
-        } else if (
-            RED.has(number)
-        ) {
-
-            ctx.fillStyle =
-                "#a61f28";
-
-        } else {
-
-            ctx.fillStyle =
-                "#121212";
-        }
 
         ctx.fill();
+
 
         ctx.strokeStyle =
             "rgba(255,255,255,0.08)";
 
-        ctx.lineWidth =
-            1;
+        ctx.lineWidth = 1;
 
         ctx.stroke();
 
-        // ==================================================
-        // NUMERO
-        // ==================================================
 
+        // Numéro
         ctx.save();
+
 
         const textRadius =
             (
-                outerRadius +
-                pocketRadius
+                outer +
+                inner
             ) / 2;
 
-        const textX =
-            Math.cos(angle) *
-            textRadius;
-
-        const textY =
-            Math.sin(angle) *
-            textRadius;
 
         ctx.translate(
-            textX,
-            textY
+            Math.cos(angle) *
+                textRadius,
+
+            Math.sin(angle) *
+                textRadius
         );
+
 
         ctx.rotate(
             angle +
             Math.PI / 2
         );
 
+
         ctx.fillStyle =
             "#f7f1df";
 
         ctx.font =
-            "bold 13px Arial";
+            "bold 12px Arial";
 
         ctx.textAlign =
             "center";
@@ -566,314 +453,307 @@ function drawFrame(
         ctx.textBaseline =
             "middle";
 
+
         ctx.fillText(
             String(number),
             0,
             0
         );
 
+
         ctx.restore();
+
     }
 
-    // ==================================================
-    // CENTRE METALLIQUE
-    // ==================================================
 
-    const centerGradient =
-        ctx.createRadialGradient(
-            -10,
-            -10,
-            5,
-            0,
-            0,
-            70
-        );
-
-    centerGradient.addColorStop(
-        0,
-        "#f1cf70"
-    );
-
-    centerGradient.addColorStop(
-        0.45,
-        "#b9852a"
-    );
-
-    centerGradient.addColorStop(
-        1,
-        "#54340f"
-    );
+    // =================================================
+    // CENTRE
+    // =================================================
 
     ctx.beginPath();
 
     ctx.arc(
         0,
         0,
-        62,
+        53,
         0,
         Math.PI * 2
     );
 
     ctx.fillStyle =
-        centerGradient;
+        "#b78324";
 
     ctx.fill();
+
 
     ctx.beginPath();
 
     ctx.arc(
         0,
         0,
-        34,
+        30,
         0,
         Math.PI * 2
     );
 
     ctx.fillStyle =
-        "#12301d";
+        "#19452b";
 
     ctx.fill();
+
 
     ctx.restore();
 
-    // ==================================================
+
+    // =================================================
     // BILLE
-    // ==================================================
+    // =================================================
+
+    const pointerAngle =
+        -Math.PI / 2;
+
+
+    let ballAngle;
+
+
+    if (t < 0.78) {
+
+        const progress =
+            t / 0.78;
+
+
+        ballAngle =
+            pointerAngle -
+            Math.PI * 2 *
+            10 *
+            progress;
+
+    } else {
+
+        const settle =
+            easeOutCubic(
+                (t - 0.78) /
+                0.22
+            );
+
+
+        const startingAngle =
+            pointerAngle -
+            Math.PI * 2 *
+            10;
+
+
+        ballAngle =
+            startingAngle +
+            (
+                pointerAngle -
+                startingAngle
+            ) *
+            settle;
+    }
+
 
     const ballRadius =
-        177;
+        154;
 
-    const ballX =
-        centerX +
-        Math.cos(ballAngle) *
+
+    const bx =
+        cx +
+        Math.cos(
+            ballAngle
+        ) *
         ballRadius;
 
-    const ballY =
-        centerY +
-        Math.sin(ballAngle) *
+
+    const by =
+        cy +
+        Math.sin(
+            ballAngle
+        ) *
         ballRadius *
         0.82;
 
+
     ctx.save();
 
+
     ctx.shadowColor =
-        "rgba(0,0,0,0.70)";
+        "rgba(0,0,0,0.7)";
 
     ctx.shadowBlur =
-        14;
+        12;
 
     ctx.shadowOffsetY =
-        7;
+        6;
 
-    const ballGradient =
+
+    const ball =
         ctx.createRadialGradient(
-            ballX - 4,
-            ballY - 4,
+            bx - 3,
+            by - 3,
             1,
-            ballX,
-            ballY,
-            11
+            bx,
+            by,
+            10
         );
 
-    ballGradient.addColorStop(
+
+    ball.addColorStop(
         0,
         "#ffffff"
     );
 
-    ballGradient.addColorStop(
+    ball.addColorStop(
         0.55,
-        "#dddddd"
+        "#eeeeee"
     );
 
-    ballGradient.addColorStop(
+    ball.addColorStop(
         1,
         "#777777"
     );
 
+
     ctx.beginPath();
 
     ctx.arc(
-        ballX,
-        ballY,
-        9,
+        bx,
+        by,
+        8,
         0,
         Math.PI * 2
     );
 
     ctx.fillStyle =
-        ballGradient;
+        ball;
 
     ctx.fill();
 
+
     ctx.restore();
 
-    // ==================================================
-    // TITRE
-    // ==================================================
 
-    ctx.textAlign =
-        "center";
-
-    ctx.textBaseline =
-        "middle";
+    // =================================================
+    // POINTEUR
+    // =================================================
 
     ctx.fillStyle =
-        "#f5f0e8";
+        "#f1cc71";
 
-    ctx.font =
-        "bold 28px Arial";
 
-    ctx.fillText(
-        "NÉBUL ROULETTE",
-        centerX,
-        35
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx,
+        60
     );
 
+    ctx.lineTo(
+        cx - 11,
+        79
+    );
+
+    ctx.lineTo(
+        cx + 11,
+        79
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    // =================================================
+    // TEXTE PENDANT LE SPIN
+    // =================================================
+
     ctx.fillStyle =
-        "rgba(255,255,255,0.65)";
+        "rgba(255,255,255,0.72)";
 
     ctx.font =
         "15px Arial";
 
+
+    let status;
+
+    if (t < 0.55) {
+
+        status =
+            "La bille tourne...";
+
+    } else if (t < 0.82) {
+
+        status =
+            "La roue ralentit...";
+
+    } else {
+
+        status =
+            "La bille cherche sa case...";
+
+    }
+
+
     ctx.fillText(
-        t < 0.72
-            ? "La bille tourne..."
-            : "La bille ralentit...",
-        centerX,
+        status,
+        cx,
         60
     );
 
-    // ==================================================
-    // RESULTAT
-    // ==================================================
 
-    if (
-        t > 0.92
-    ) {
-
-        const alpha =
-            clamp(
-                (
-                    t -
-                    0.92
-                ) /
-                0.08,
-                0,
-                1
-            );
-
-        ctx.save();
-
-        ctx.globalAlpha =
-            alpha;
-
-        ctx.fillStyle =
-            "rgba(5,5,8,0.85)";
-
-        ctx.beginPath();
-
-        ctx.roundRect(
-            centerX - 135,
-            475,
-            270,
-            48,
-            16
-        );
-
-        ctx.fill();
-
-        ctx.strokeStyle =
-            "#d3a84b";
-
-        ctx.lineWidth =
-            2;
-
-        ctx.stroke();
-
-        const color =
-            getColor(
-                result
-            );
-
-        ctx.fillStyle =
-            color === "rouge"
-                ? "#ff5564"
-                : color === "noir"
-                    ? "#ffffff"
-                    : "#55f08c";
-
-        ctx.font =
-            "bold 23px Arial";
-
-        ctx.fillText(
-            `${result} • ${color.toUpperCase()}`,
-            centerX,
-            499
-        );
-
-        ctx.restore();
-    }
-
-    // ==================================================
+    // =================================================
     // BARRE DE PROGRESSION
-    // ==================================================
+    // =================================================
 
     ctx.fillStyle =
         "rgba(255,255,255,0.08)";
 
     ctx.fillRect(
-        70,
-        520,
-        width - 140,
+        80,
+        478,
+        WIDTH - 160,
         4
     );
+
 
     ctx.fillStyle =
         "#c89a43";
 
     ctx.fillRect(
-        70,
-        520,
-        (
-            width - 140
-        ) * t,
+        80,
+        478,
+        (WIDTH - 160) * t,
         4
     );
+
 }
 
-// ======================================================
-// GENERATION GIF
-// ======================================================
 
-function renderRoulette(
+// =====================================================
+// RENDER
+// =====================================================
+
+async function renderRoulette(
     result,
-    outputPath,
-    options = {}
+    outputPath
 ) {
 
     const number =
-        validateResult(
-            result
-        );
+        Number(result);
 
-    const ffmpeg =
-        options.ffmpegPath ||
-        FFMPEG_PATH;
 
     if (
-        !fs.existsSync(
-            ffmpeg
-        )
+        !Number.isInteger(number) ||
+        number < 0 ||
+        number > 36
     ) {
 
         throw new Error(
-            `FFmpeg introuvable : ${ffmpeg}`
+            "Résultat roulette invalide."
         );
+
     }
 
-    // ==================================================
-    // CANVAS
-    // ==================================================
 
     const canvas =
         createCanvas(
@@ -881,260 +761,86 @@ function renderRoulette(
             HEIGHT
         );
 
+
     const ctx =
         canvas.getContext(
             "2d"
         );
 
-    const totalFrames =
-        Math.round(
-            FPS *
-            DURATION
+
+    const encoder =
+        new GIFEncoder(
+            WIDTH,
+            HEIGHT,
+            "octree",
+            false,
+            TOTAL_FRAMES
         );
 
-    // ==================================================
-    // FFMPEG GIF
-    // ==================================================
 
-    const args = [
+    encoder.start();
 
-        "-y",
+    // On laisse Discord afficher le résultat final
+    // après l'animation, donc pas besoin de boucle.
+    encoder.setDelay(
+        1000 / FPS
+    );
 
-        "-f",
-        "image2pipe",
+    encoder.setQuality(
+        10
+    );
 
-        "-vcodec",
-        "png",
 
-        "-r",
-        String(FPS),
+    for (
+        let frame = 0;
+        frame < TOTAL_FRAMES;
+        frame++
+    ) {
 
-        "-i",
-        "pipe:0",
+        drawFrame(
+            ctx,
+            number,
+            frame
+        );
 
-        "-an",
 
-        // Optimisation GIF
-        "-vf",
-        "fps=20,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256:stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a",
+        encoder.addFrame(
+            ctx
+        );
 
-        // Boucle infinie
-        "-loop",
-        "0",
+    }
 
-        "-gifflags",
-        "+transdiff",
 
-        outputPath
-    ];
+    encoder.finish();
 
-    return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
 
-            const process =
-                spawn(
-                    ffmpeg,
-                    args,
-                    {
-                        windowsHide:
-                            true,
+    const buffer =
+        encoder.out.getData();
 
-                        stdio: [
-                            "pipe",
-                            "ignore",
-                            "pipe"
-                        ]
-                    }
-                );
 
-            let stderr =
-                "";
-
-            let finished =
-                false;
-
-            // ==================================================
-            // ERREUR STDIN
-            // ==================================================
-            //
-            // IMPORTANT :
-            // FFmpeg peut fermer stdin avant qu'on ait fini
-            // d'envoyer toutes les frames.
-            // On ne laisse surtout pas Node planter sur EPIPE.
-            //
-
-            process.stdin.on(
-                "error",
-                error => {
-
-                    if (
-                        error.code ===
-                        "EPIPE"
-                    ) {
-                        return;
-                    }
-
-                    console.error(
-                        "❌ Erreur stdin FFmpeg :",
-                        error
-                    );
-                }
-            );
-
-            // ==================================================
-            // STDERR
-            // ==================================================
-
-            process.stderr.on(
-                "data",
-                chunk => {
-
-                    stderr +=
-                        chunk.toString();
-                }
-            );
-
-            // ==================================================
-            // PROCESS ERROR
-            // ==================================================
-
-            process.on(
-                "error",
-                error => {
-
-                    if (
-                        finished
-                    ) {
-                        return;
-                    }
-
-                    finished =
-                        true;
-
-                    reject(
-                        error
-                    );
-                }
-            );
-
-            // ==================================================
-            // PROCESS FIN
-            // ==================================================
-
-            process.on(
-                "close",
-                code => {
-
-                    if (
-                        finished
-                    ) {
-                        return;
-                    }
-
-                    finished =
-                        true;
-
-                    if (
-                        code === 0
-                    ) {
-
-                        resolve(
-                            outputPath
-                        );
-
-                    } else {
-
-                        reject(
-                            new Error(
-                                `FFmpeg roulette ${code}: ${stderr}`
-                            )
-                        );
-                    }
-                }
-            );
-
-            // ==================================================
-            // GENERATION DES FRAMES
-            // ==================================================
-
-            try {
-
-                for (
-                    let i = 0;
-                    i < totalFrames;
-                    i++
-                ) {
-
-                    // FFmpeg a déjà fermé stdin
-                    // ou le process est terminé :
-                    if (
-                        process.stdin.destroyed ||
-                        process.killed
-                    ) {
-                        break;
-                    }
-
-                    drawFrame(
-                        ctx,
-                        number,
-                        i,
-                        totalFrames
-                    );
-
-                    process.stdin.write(
-                        canvas.toBuffer(
-                            "image/png"
-                        )
-                    );
-                }
-
-                if (
-                    !process.stdin.destroyed
-                ) {
-
-                    process.stdin.end();
-                }
-
-            } catch (
-                error
-            ) {
-
-                try {
-                    process.stdin.destroy();
-                } catch {}
-
-                if (
-                    !finished
-                ) {
-
-                    finished =
-                        true;
-
-                    try {
-                        process.kill();
-                    } catch {}
-
-                    reject(
-                        error
-                    );
-                }
-            }
+    fs.mkdirSync(
+        path.dirname(
+            outputPath
+        ),
+        {
+            recursive: true
         }
     );
+
+
+    fs.writeFileSync(
+        outputPath,
+        buffer
+    );
+
+
+    return outputPath;
 }
 
-// ======================================================
-// EXPORT
-// ======================================================
 
 module.exports = {
-
     WHEEL,
-
     getColor,
-
-    renderRoulette
+    renderRoulette,
+    DURATION
 };

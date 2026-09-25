@@ -3,9 +3,16 @@ const {
 } = require("discord.js");
 
 
-const BOOST_CHANNEL =
-    "1415341178781569084";
+// =========================================================
+// CONFIG
+// =========================================================
 
+const BOOST_CHANNEL = "1415341178781569084";
+
+
+// =========================================================
+// EVENT
+// =========================================================
 
 module.exports = async (
     client,
@@ -13,126 +20,129 @@ module.exports = async (
     newMember
 ) => {
 
-    // ==========================================
-    // DÉTECTER UN NOUVEAU BOOST
-    // ==========================================
-
-    if (
-        oldMember.premiumSince ||
-        !newMember.premiumSince
-    ) {
-
-        return;
-
-    }
-
-
-    // ==========================================
-    // SALON BOOST
-    // ==========================================
-
-    const channel =
-        newMember.guild.channels.cache.get(
-            BOOST_CHANNEL
-        );
-
-
-    if (!channel) {
-
-        console.error(
-            "❌ Salon des boosts introuvable."
-        );
-
-        return;
-
-    }
-
-
-    // ==========================================
-    // MESSAGE
-    // ==========================================
-
-    const embed =
-        new EmbedBuilder()
-
-            .setColor(
-                "#FF73FA"
-            )
-
-            .setTitle(
-                "💜 NOUVEAU BOOST !"
-            )
-
-            .setThumbnail(
-                newMember.user.displayAvatarURL({
-                    dynamic: true,
-                    size: 512
-                })
-            )
-
-            .setDescription(
-`
-✨ **Un énorme merci à toi ${newMember} !**
-
-🚀 Tu viens de **booster Nebulae** !
-
-Grâce à ton soutien, tu aides directement le serveur à grandir et à débloquer encore plus d'avantages pour la communauté. 💜
-
-━━━━━━━━━━━━━━━━━━
-
-💎 **Merci pour ton soutien !**
-
-🌌 **Nebulae** compte sur toi et apprécie énormément ton geste.
-
-> 🫶 Merci **${newMember.user.username}** pour le boost !
-`
-            )
-
-            .setFooter({
-
-                text:
-                    "Nebulae • Merci pour ton soutien 💜"
-
-            })
-
-            .setTimestamp();
-
-
-    // ==========================================
-    // ENVOYER
-    // ==========================================
-
     try {
+
+        // =====================================================
+        // NOUVEAU BOOST UNIQUEMENT
+        // =====================================================
+
+        const wasBoosting =
+            oldMember.premiumSince !== null;
+
+        const isBoosting =
+            newMember.premiumSince !== null;
+
+
+        // Pas un nouveau boost
+        if (
+            wasBoosting ||
+            !isBoosting
+        ) {
+            return;
+        }
+
+
+        console.log(
+            `💜 Nouveau boost détecté : ${newMember.user.tag}`
+        );
+
+
+        // =====================================================
+        // CHANNEL
+        // =====================================================
+
+        const channel =
+            await newMember.guild.channels.fetch(
+                BOOST_CHANNEL
+            ).catch(
+                () => null
+            );
+
+
+        if (!channel) {
+
+            console.error(
+                `❌ Salon boost introuvable : ${BOOST_CHANNEL}`
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // EMBED
+        // =====================================================
+
+        const embed =
+            new EmbedBuilder()
+
+                .setColor(
+                    "#FF73FA"
+                )
+
+                .setAuthor({
+                    name:
+                        `${newMember.user.username} a boosté Nébulae`,
+                    iconURL:
+                        newMember.user.displayAvatarURL({
+                            size: 256
+                        })
+                })
+
+                .setDescription(
+                    `💜 **Merci ${newMember} !**\n\n` +
+                    `Ton boost aide directement **Nébulae**. 🚀`
+                )
+
+                .setThumbnail(
+                    newMember.user.displayAvatarURL({
+                        size: 512
+                    })
+                )
+
+                .setFooter({
+                    text:
+                        "Nébulae • Nouveau boost"
+                })
+
+                .setTimestamp();
+
+
+        // =====================================================
+        // ENVOI
+        // =====================================================
 
         await channel.send({
 
             content:
-                `🎉 ${newMember}`,
+                `${newMember}`,
 
             embeds: [
                 embed
             ],
 
             allowedMentions: {
-
                 users: [
                     newMember.id
                 ]
-
             }
 
         });
 
 
+        // =====================================================
+        // LOG
+        // =====================================================
+
         console.log(
-            `💜 Nouveau boost : ${newMember.user.tag}`
+            `✅ Message de boost envoyé pour ${newMember.user.tag}`
         );
 
 
     } catch (error) {
 
         console.error(
-            "❌ Erreur message boost :",
+            "❌ Erreur système boost :",
             error
         );
 
