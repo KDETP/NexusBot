@@ -1,6 +1,10 @@
-const fs = require("fs");
-const path = require("path");
-const { EmbedBuilder } = require("discord.js");
+const {
+    EmbedBuilder
+} = require("discord.js");
+
+const rewardsManager =
+    require("../services/casino/rewardsManager");
+
 
 module.exports = {
 
@@ -8,52 +12,107 @@ module.exports = {
 
     async execute(message) {
 
-        const file = path.join(__dirname, "..", "data", "economy.json");
+        const result =
+            rewardsManager.claimDaily(
+                message.author.id
+            );
 
-        const data = JSON.parse(fs.readFileSync(file, "utf8"));
 
-        const id = message.author.id;
+        // ==========================================
+        // COOLDOWN
+        // ==========================================
 
-        if (!data[id]) {
+        if (
+            result.cooldown
+        ) {
 
-            data[id] = {
-                money: 500,
-                lastDaily: 0
-            };
+            const embed =
+                new EmbedBuilder()
+
+                    .setColor("#5865F2")
+
+                    .setTitle(
+                        "🎁 Daily"
+                    )
+
+                    .setDescription(
+`
+⏳ **Ton Daily n'est pas encore disponible.**
+
+Tu pourras récupérer ta prochaine récompense dans :
+
+> **${rewardsManager.formatTime(result.remaining)}**
+
+🔥 Continue ton streak pour augmenter tes récompenses !
+`
+                    )
+
+                    .setFooter({
+                        text:
+                            "Nébula • Économie"
+                    });
+
+            return message.reply({
+                embeds: [
+                    embed
+                ]
+            });
 
         }
 
-        const now = Date.now();
 
-        const cooldown = 24 * 60 * 60 * 1000;
+        // ==========================================
+        // SUCCÈS
+        // ==========================================
 
-        if (now - data[id].lastDaily < cooldown) {
+        const reward =
+            result.reward;
 
-            const remaining = cooldown - (now - data[id].lastDaily);
+        const streak =
+            result.streak;
 
-            const hours = Math.floor(remaining / 3600000);
+        const balance =
+            result.balance;
 
-            const minutes = Math.floor((remaining % 3600000) / 60000);
 
-            return message.reply(`⏳ Tu pourras refaire ton daily dans **${hours}h ${minutes}min**.`);
-        }
+        const embed =
+            new EmbedBuilder()
 
-        data[id].money += 500;
-        data[id].lastDaily = now;
+                .setColor("#8B5CF6")
 
-        fs.writeFileSync(file, JSON.stringify(data, null, 2));
+                .setTitle(
+                    "🎁 RÉCOMPENSE QUOTIDIENNE"
+                )
 
-        const embed = new EmbedBuilder()
+                .setDescription(
+`
+✨ **Récompense récupérée !**
 
-            .setColor("Green")
+💎 **+${reward.toLocaleString("fr-FR")} NebuCoins**
 
-            .setTitle("🎁 Daily")
+🔥 **Streak :** ${streak} jour${streak > 1 ? "s" : ""}
 
-            .setDescription(`Tu viens de recevoir **500 NebuCoins 💎** !`)
+💰 **Solde :** ${balance.toLocaleString("fr-FR")} NebuCoins
 
-            .setFooter({ text: "Nébul • Économie" });
+━━━━━━━━━━━━━━━━━━
 
-        message.reply({ embeds: [embed] });
+🎯 Continue demain pour conserver ton streak.
+`
+                )
+
+                .setFooter({
+                    text:
+                        "Nébula • Daily"
+                })
+
+                .setTimestamp();
+
+
+        return message.reply({
+            embeds: [
+                embed
+            ]
+        });
 
     }
 

@@ -1,7 +1,10 @@
 const {
     ActionRowBuilder,
     StringSelectMenuBuilder,
-    EmbedBuilder
+    EmbedBuilder,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
 } = require("discord.js");
 
 
@@ -147,7 +150,8 @@ module.exports = async (
 ) => {
 
     if (
-        !interaction.isStringSelectMenu()
+        !interaction.isStringSelectMenu() &&
+        !interaction.isModalSubmit()
     ) {
 
         return;
@@ -157,6 +161,128 @@ module.exports = async (
 
     const id =
         interaction.customId;
+
+
+    // ======================================
+    // RAISON PERSONNALISÉE
+    // ======================================
+
+    if (
+        interaction.isModalSubmit() &&
+        id.startsWith(
+            "ban_custom_reason_"
+        )
+    ) {
+
+        const parts =
+            id.split("_");
+
+
+        const targetId =
+            parts[3];
+
+
+        const moderatorId =
+            parts[4];
+
+
+        if (
+            interaction.user.id !==
+            moderatorId
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    "❌ Cette fenêtre appartient à un autre modérateur.",
+
+                ephemeral: true
+
+            });
+
+        }
+
+
+        const allowed =
+            interaction.member.roles.cache.some(
+
+                role =>
+                    BAN_ROLES.includes(
+                        role.id
+                    )
+
+            );
+
+
+        if (!allowed) {
+
+            return interaction.reply({
+
+                content:
+                    "❌ Tu n'as pas la permission.",
+
+                ephemeral: true
+
+            });
+
+        }
+
+
+        const reason =
+            interaction.fields
+                .getTextInputValue(
+                    "ban_custom_reason_text"
+                )
+                .trim();
+
+
+        if (
+            reason.length < 3
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    "❌ La raison doit contenir au moins 3 caractères.",
+
+                ephemeral: true
+
+            });
+
+        }
+
+
+        customReasons.set(
+            getCustomReasonKey(
+                targetId,
+                moderatorId
+            ),
+            {
+                reason,
+                createdAt: Date.now()
+            }
+        );
+
+
+        return interaction.reply(
+            createDurationPayload(
+                targetId,
+                moderatorId,
+                "custom",
+                reason
+            )
+        );
+
+    }
+
+
+    if (
+        !interaction.isStringSelectMenu()
+    ) {
+
+        return;
+
+    }
 
 
     // ======================================
@@ -235,134 +361,75 @@ module.exports = async (
             interaction.values[0];
 
 
+        if (
+            reasonKey === "autre"
+        ) {
+
+            const modal =
+                new ModalBuilder()
+
+                    .setCustomId(
+                        `ban_custom_reason_${targetId}_${moderatorId}`
+                    )
+
+                    .setTitle(
+                        "Raison personnalisée du ban");
+
+
+            const reasonInput =
+                new TextInputBuilder()
+
+                    .setCustomId(
+                        "ban_custom_reason_text"
+                    )
+
+                    .setLabel(
+                        "Indique la raison du ban"
+                    )
+
+                    .setStyle(
+                        TextInputStyle.Paragraph
+                    )
+
+                    .setMinLength(3)
+
+                    .setMaxLength(500)
+
+                    .setRequired(true)
+
+                    .setPlaceholder(
+                        "Ex. Arnaque répétée envers les membres"
+                    );
+
+
+            modal.addComponents(
+                new ActionRowBuilder()
+                    .addComponents(
+                        reasonInput
+                    )
+            );
+
+
+            return interaction.showModal(
+                modal
+            );
+
+        }
+
+
         const reason =
             REASONS[reasonKey] ||
             "Autre";
 
 
-        // ==================================
-        // MENU DURÉE
-        // ==================================
-
-        const durationMenu =
-            new StringSelectMenuBuilder()
-
-                .setCustomId(
-                    `ban_duration_${targetId}_${moderatorId}_${reasonKey}`
-                )
-
-                .setPlaceholder(
-                    "⏱️ Choisis la durée du ban"
-                )
-
-                .addOptions([
-
-                    {
-                        label: "10 minutes",
-                        value: "10m",
-                        emoji: "🟢"
-                    },
-
-                    {
-                        label: "15 minutes",
-                        value: "15m",
-                        emoji: "🟢"
-                    },
-
-                    {
-                        label: "30 minutes",
-                        value: "30m",
-                        emoji: "🟡"
-                    },
-
-                    {
-                        label: "45 minutes",
-                        value: "45m",
-                        emoji: "🟠"
-                    },
-
-                    {
-                        label: "1 heure",
-                        value: "1h",
-                        emoji: "🟠"
-                    },
-
-                    {
-                        label: "6 heures",
-                        value: "6h",
-                        emoji: "🔴"
-                    },
-
-                    {
-                        label: "12 heures",
-                        value: "12h",
-                        emoji: "🔴"
-                    },
-
-                    {
-                        label: "24 heures",
-                        value: "24h",
-                        emoji: "🔴"
-                    },
-
-                    {
-                        label: "Permanent",
-                        value: "permanent",
-                        emoji: "🔒"
-                    }
-
-                ]);
-
-
-        return interaction.update({
-
-            embeds: [
-
-                new EmbedBuilder()
-
-                    .setColor(
-                        "#ED4245"
-                    )
-
-                    .setTitle(
-                        "⏱️ Durée du ban"
-                    )
-
-                    .setDescription(
-`
-👤 **Membre**
-
-<@${targetId}>
-
-📝 **Raison**
-
-**${reason}**
-
-━━━━━━━━━━━━━━━━━━
-
-⏱️ **Choisis maintenant la durée du ban.**
-`
-                    )
-
-                    .setFooter({
-
-                        text:
-                            "NebuBot • Modération"
-
-                    })
-
-            ],
-
-            components: [
-
-                new ActionRowBuilder()
-                    .addComponents(
-                        durationMenu
-                    )
-
-            ]
-
-        });
+        return interaction.update(
+            createDurationPayload(
+                targetId,
+                moderatorId,
+                reasonKey,
+                reason
+            )
+        );
 
     }
 
@@ -452,9 +519,46 @@ module.exports = async (
         interaction.values[0];
 
 
-    const reason =
+    let reason =
         REASONS[reasonKey] ||
         "Autre";
+
+
+    if (
+        reasonKey === "custom"
+    ) {
+
+        const customReason =
+            customReasons.get(
+                getCustomReasonKey(
+                    targetId,
+                    moderatorId
+                )
+            );
+
+
+        if (
+            !customReason ||
+            Date.now() - customReason.createdAt >
+                15 * 60 * 1000
+        ) {
+
+            return interaction.reply({
+
+                content:
+                    "❌ La raison personnalisée a expiré. Recommence le ban.",
+
+                ephemeral: true
+
+            });
+
+        }
+
+
+        reason =
+            customReason.reason;
+
+    }
 
 
     // ======================================
@@ -571,6 +675,20 @@ module.exports = async (
             ephemeral: true
 
         });
+
+    }
+
+
+    if (
+        reasonKey === "custom"
+    ) {
+
+        customReasons.delete(
+            getCustomReasonKey(
+                targetId,
+                moderatorId
+            )
+        );
 
     }
 
@@ -733,3 +851,102 @@ ${expirationText}
     });
 
 };
+
+
+const customReasons = new Map();
+
+
+function getCustomReasonKey(
+    targetId,
+    moderatorId
+) {
+
+    return `${targetId}:${moderatorId}`;
+
+}
+
+
+function createDurationPayload(
+    targetId,
+    moderatorId,
+    reasonKey,
+    reason
+) {
+
+    const durationMenu =
+        new StringSelectMenuBuilder()
+
+            .setCustomId(
+                `ban_duration_${targetId}_${moderatorId}_${reasonKey}`
+            )
+
+            .setPlaceholder(
+                "⏱️ Choisis la durée du ban"
+            )
+
+            .addOptions([
+
+                { label: "10 minutes", value: "10m", emoji: "🟢" },
+                { label: "15 minutes", value: "15m", emoji: "🟢" },
+                { label: "30 minutes", value: "30m", emoji: "🟡" },
+                { label: "45 minutes", value: "45m", emoji: "🟠" },
+                { label: "1 heure", value: "1h", emoji: "🟠" },
+                { label: "6 heures", value: "6h", emoji: "🔴" },
+                { label: "12 heures", value: "12h", emoji: "🔴" },
+                { label: "24 heures", value: "24h", emoji: "🔴" },
+                { label: "Permanent", value: "permanent", emoji: "🔒" }
+
+            ]);
+
+
+    return {
+
+        embeds: [
+
+            new EmbedBuilder()
+
+                .setColor(
+                    "#ED4245"
+                )
+
+                .setTitle(
+                    "⏱️ Durée du ban"
+                )
+
+                .setDescription(
+`
+👤 **Membre**
+
+<@${targetId}>
+
+📝 **Raison**
+
+**${reason}**
+
+━━━━━━━━━━━━━━━━━━
+
+⏱️ **Choisis maintenant la durée du ban.**
+`
+                )
+
+                .setFooter({
+
+                    text:
+                        "NebuBot • Modération"
+
+                })
+
+        ],
+
+        components: [
+
+            new ActionRowBuilder()
+                .addComponents(
+                    durationMenu
+                )
+
+        ]
+
+    };
+
+}

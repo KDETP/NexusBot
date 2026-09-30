@@ -20,19 +20,6 @@ const brain =
 
 
 // ==========================================
-// FFMPEG
-// ==========================================
-
-if (process.platform === "win32") {
-    process.env.FFMPEG_PATH =
-        "C:\\Users\\ausxj\\Desktop\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe";
-} else {
-    process.env.FFMPEG_PATH =
-        "/usr/bin/ffmpeg";
-}
-
-
-// ==========================================
 // BASE DE DONNÉES
 // ==========================================
 
@@ -94,11 +81,6 @@ client.once(
 
         console.log(
             `✅ ${client.user.tag} est connecté !`
-        );
-
-
-        console.log(
-            "🎵 NebuMusic chargé !"
         );
 
 

@@ -9,7 +9,8 @@ module.exports = async (
 
     if (
         !interaction.isButton() &&
-        !interaction.isStringSelectMenu()
+        !interaction.isStringSelectMenu() &&
+        !interaction.isModalSubmit()
     ) {
 
         return;
@@ -34,26 +35,6 @@ module.exports = async (
 
 
         return quizCasiManager(
-            client,
-            interaction
-        );
-
-    }
-
-
-    // ==========================================
-    // 🎵 NEBUMUSIC
-    // ==========================================
-
-    if (
-        id.startsWith("music_")
-    ) {
-
-        const musicButtons =
-            require("./musicButtons.js");
-
-
-        return musicButtons(
             client,
             interaction
         );
@@ -137,7 +118,8 @@ module.exports = async (
         "moderationButtons",
         "kickButtons",
         "banButtons",
-        "giveawayButtons"
+        "giveawayButtons", 
+        "giftButtons"
 
     ];
 
