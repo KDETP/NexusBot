@@ -1,8 +1,3 @@
-const {
-    PermissionsBitField
-} = require("discord.js");
-
-
 // ==========================================
 // RÔLES AUTORISÉS À REJOINDRE LES VOCALS PRIVÉS
 // ==========================================
@@ -19,6 +14,43 @@ const PRIVATE_VOICE_ROLES = [
 
 
 // ==========================================
+// VOCALS PRIVÉS
+// ==========================================
+
+const privateVoiceChannels =
+    require("../services/privateVoiceManager").privateVoiceChannels;
+
+
+// ==========================================
+// MESSAGES ALÉATOIRES
+// ==========================================
+
+const PRIVATE_VOICE_MESSAGES = [
+    "💀 Gros, la voc est privée là !!!",
+    "🚫 Frérot, cette voc est privée.",
+    "😭 Tu t'es trompé de voc, celle-là elle est privée.",
+    "🔒 Gros la voc est privée là, tu peux pas rentrer.",
+    "💀 La porte est fermée frérot.",
+    "🚪 Désolé gros, accès refusé, la voc est privée.",
+    "😭 Même pas tu rentres ici, c'est privé.",
+    "🔒 Cette voc c'est staff uniquement gros.",
+    "💀 T'as essayé de rentrer dans une voc privée toi.",
+    "🚫 Nope frérot, cette voc est privée.",
+    "😭 Gros, regarde un peu, c'est PRIVÉ ici.",
+    "🔒 Accès refusé mon reuf, la voc est privée."
+];
+
+
+function randomPrivateMessage() {
+    return PRIVATE_VOICE_MESSAGES[
+        Math.floor(
+            Math.random() * PRIVATE_VOICE_MESSAGES.length
+        )
+    ];
+}
+
+
+// ==========================================
 // ÉVÉNEMENT
 // ==========================================
 
@@ -28,24 +60,17 @@ module.exports = async (
     newState
 ) => {
 
-    // ======================================
-    // SEULEMENT QUAND QUELQU'UN REJOINT
-    // UN VOCAL
-    // ======================================
-
+    // Seulement lorsqu'une personne rejoint un vocal
     if (
         oldState.channelId ||
         !newState.channelId
     ) {
-
         return;
-
     }
 
 
     const channel =
         newState.channel;
-
 
     const member =
         newState.member;
@@ -55,22 +80,13 @@ module.exports = async (
         !channel ||
         !member
     ) {
-
         return;
-
     }
 
 
-    // ======================================
-    // IGNORER LES BOTS
-    // ======================================
-
-    if (
-        member.user.bot
-    ) {
-
+    // Ignorer les bots
+    if (member.user.bot) {
         return;
-
     }
 
 
@@ -78,33 +94,12 @@ module.exports = async (
     // VÉRIFIER SI LE VOCAL EST PRIVÉ
     // ======================================
 
-    const everyoneOverwrite =
-        channel.permissionOverwrites.cache.get(
-            newState.guild.roles.everyone.id
-        );
-
-
     if (
-        !everyoneOverwrite
+        !privateVoiceChannels.has(
+            channel.id
+        )
     ) {
-
         return;
-
-    }
-
-
-    const everyoneConnect =
-        everyoneOverwrite.deny.has(
-            PermissionsBitField.Flags.Connect
-        );
-
-
-    if (
-        !everyoneConnect
-    ) {
-
-        return;
-
     }
 
 
@@ -114,21 +109,15 @@ module.exports = async (
 
     const allowed =
         member.roles.cache.some(
-
             role =>
                 PRIVATE_VOICE_ROLES.includes(
                     role.id
                 )
-
         );
 
 
-    if (
-        allowed
-    ) {
-
+    if (allowed) {
         return;
-
     }
 
 
@@ -139,9 +128,8 @@ module.exports = async (
     try {
 
         await member.voice.disconnect(
-            "Vocal privé"
+            "Tentative de rejoindre un vocal privé"
         );
-
 
     } catch (error) {
 
@@ -151,7 +139,6 @@ module.exports = async (
         );
 
         return;
-
     }
 
 
@@ -162,18 +149,8 @@ module.exports = async (
     try {
 
         await member.send({
-
-            content:
-`
-🔒 **Vocal privé**
-
-Le salon vocal **${channel.name}** est actuellement privé.
-
-Tu ne peux pas rejoindre ce vocal pour le moment.
-`
-
+            content: randomPrivateMessage()
         });
-
 
     } catch (error) {
 

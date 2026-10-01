@@ -30,6 +30,13 @@ const BINGO_COST = 500;
 const BINGO_COOLDOWN = 30 * 60 * 1000;
 
 const GIFT_COOLDOWN = 30 * 60 * 1000;
+const GIVE_MIN = 10;
+const GIVE_MAX = 1000000;
+
+const GIVE_TAX_BASE = 0.02;
+const GIVE_TAX_MAX = 0.15;
+const GIVE_TAX_SCALE = 50000;
+
 
 
 // =====================================================
@@ -655,6 +662,162 @@ function openGift(userId, chosenColor) {
         balance:
             user.money
 
+    };
+
+}
+
+
+
+// =====================================================
+// TRANSFERT / NGIVE
+// =====================================================
+
+function calculateGiveTax(amount) {
+
+    const normalized =
+        Math.min(
+            amount / GIVE_TAX_SCALE,
+            1
+        );
+
+    const taxRate =
+        GIVE_TAX_BASE +
+        (GIVE_TAX_MAX - GIVE_TAX_BASE) *
+        Math.sqrt(normalized);
+
+    const tax =
+        Math.floor(
+            amount * taxRate
+        );
+
+    return {
+        tax,
+        taxRate
+    };
+
+}
+
+
+function giveMoney(
+    fromUserId,
+    toUserId,
+    amount
+) {
+
+    const data =
+        loadEconomy();
+
+    const sender =
+        getUser(
+            data,
+            fromUserId
+        );
+
+    const receiver =
+        getUser(
+            data,
+            toUserId
+        );
+
+
+    if (
+        !Number.isInteger(amount)
+    ) {
+
+        return {
+            success: false,
+            error:
+                "❌ Le montant doit être un nombre entier."
+        };
+
+    }
+
+
+    if (
+        amount < GIVE_MIN
+    ) {
+
+        return {
+            success: false,
+            error:
+                `❌ Montant minimum : **${GIVE_MIN.toLocaleString("fr-FR")} NebuCoins**.`
+        };
+
+    }
+
+
+    if (
+        amount > GIVE_MAX
+    ) {
+
+        return {
+            success: false,
+            error:
+                `❌ Montant maximum : **${GIVE_MAX.toLocaleString("fr-FR")} NebuCoins**.`
+        };
+
+    }
+
+
+    if (
+        fromUserId === toUserId
+    ) {
+
+        return {
+            success: false,
+            error:
+                "❌ Tu ne peux pas te donner des NebuCoins à toi-même."
+        };
+
+    }
+
+
+    if (
+        sender.money < amount
+    ) {
+
+        return {
+            success: false,
+            insufficient: true,
+            balance: sender.money
+        };
+
+    }
+
+
+    const {
+        tax,
+        taxRate
+    } =
+        calculateGiveTax(
+            amount
+        );
+
+
+    const received =
+        amount - tax;
+
+
+    sender.money -= amount;
+
+    receiver.money += received;
+
+
+    saveEconomy(
+        data
+    );
+
+
+    return {
+        success: true,
+        amount,
+        tax,
+        taxRate,
+        received,
+        senderBalance:
+            sender.money,
+        receiverBalance:
+            receiver.money
     };
 
 }
