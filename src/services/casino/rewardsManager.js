@@ -843,6 +843,14 @@ module.exports = {
 
     openGift,
 
+    // ==========================================
+    // TRANSFERT / NGIVE
+    // ==========================================
+
+    giveMoney,
+
+    calculateGiveTax,
+
     formatTime,
 
     getRemaining

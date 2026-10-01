@@ -1,16 +1,30 @@
 const {
 
-    ActionRowBuilder,
 
-    StringSelectMenuBuilder,
 
-    EmbedBuilder,
+    ActionRowBuilder,
 
-    ModalBuilder,
 
-    TextInputBuilder,
 
-    TextInputStyle
+    StringSelectMenuBuilder,
+
+
+
+    EmbedBuilder,
+
+
+
+    ModalBuilder,
+
+
+
+    TextInputBuilder,
+
+
+
+    TextInputStyle
+
+
 
 } = require("discord.js");
 
@@ -18,19 +32,39 @@ const {
 
 
 
+
+
+
+
+
+
 // ==========================================
+
+
 
 // RÔLES AUTORISÉS
 
+
+
 // ==========================================
+
+
+
+
 
 
 
 const BAN_ROLES = [
 
-    "1457855405370900662",
 
-    "1415339900445786183"
+
+    "1457855405370900662",
+
+
+
+    "1415339900445786183"
+
+
 
 ];
 
@@ -38,27 +72,57 @@ const BAN_ROLES = [
 
 
 
+
+
+
+
+
+
 // ==========================================
+
+
 
 // SALON LOGS
 
+
+
 // ==========================================
+
+
+
+
 
 
 
 const LOG_CHANNEL =
 
-    "1415457668071555133";
+
+
+    "1415457668071555133";
+
+
+
+
+
+
 
 
 
 
 
 // ==========================================
+
+
 
 // RAISONS
 
+
+
 // ==========================================
+
+
+
+
 
 
 
@@ -66,51 +130,103 @@ const REASONS = {
 
 
 
-    spam:
-
-        "Spam / Raid",
 
 
 
-    troll:
 
-        "Troll",
-
-
-
-    insulte:
-
-        "Insultes répétées",
+    spam:
 
 
 
-    pub:
-
-        "Publicité",
+        "Spam / Raid",
 
 
 
-    inapproprie:
-
-        "Contenu inapproprié",
 
 
 
-    raid:
 
-        "Raid",
-
-
-
-    contournement:
-
-        "Contournement de sanction",
+    troll:
 
 
 
-    autre:
+        "Troll",
 
-        "Autre"
+
+
+
+
+
+
+    insulte:
+
+
+
+        "Insultes répétées",
+
+
+
+
+
+
+
+    pub:
+
+
+
+        "Publicité",
+
+
+
+
+
+
+
+    inapproprie:
+
+
+
+        "Contenu inapproprié",
+
+
+
+
+
+
+
+    raid:
+
+
+
+        "Raid",
+
+
+
+
+
+
+
+    contournement:
+
+
+
+        "Contournement de sanction",
+
+
+
+
+
+
+
+    autre:
+
+
+
+        "Autre"
+
+
+
+
 
 
 
@@ -120,11 +236,25 @@ const REASONS = {
 
 
 
+
+
+
+
+
+
 // ==========================================
+
+
 
 // DURÉES
 
+
+
 // ==========================================
+
+
+
+
 
 
 
@@ -132,51 +262,103 @@ const DURATIONS = {
 
 
 
-    "10m":
-
-        10 \* 60 \* 1000,
 
 
 
-    "15m":
 
-        15 \* 60 \* 1000,
-
-
-
-    "30m":
-
-        30 \* 60 \* 1000,
+    "10m":
 
 
 
-    "45m":
-
-        45 \* 60 \* 1000,
+        10 * 60 * 1000,
 
 
 
-    "1h":
-
-        60 \* 60 \* 1000,
 
 
 
-    "6h":
 
-        6 \* 60 \* 60 \* 1000,
-
-
-
-    "12h":
-
-        12 \* 60 \* 60 \* 1000,
+    "15m":
 
 
 
-    "24h":
+        15 * 60 * 1000,
 
-        24 \* 60 \* 60 \* 1000
+
+
+
+
+
+
+    "30m":
+
+
+
+        30 * 60 * 1000,
+
+
+
+
+
+
+
+    "45m":
+
+
+
+        45 * 60 * 1000,
+
+
+
+
+
+
+
+    "1h":
+
+
+
+        60 * 60 * 1000,
+
+
+
+
+
+
+
+    "6h":
+
+
+
+        6 * 60 * 60 * 1000,
+
+
+
+
+
+
+
+    "12h":
+
+
+
+        12 * 60 * 60 * 1000,
+
+
+
+
+
+
+
+    "24h":
+
+
+
+        24 * 60 * 60 * 1000
+
+
+
+
 
 
 
@@ -186,93 +368,189 @@ const DURATIONS = {
 
 
 
+
+
+
+
+
+
 // ==========================================
+
+
 
 // FORMAT DURÉE
 
+
+
 // ==========================================
+
+
+
+
 
 
 
 function formatDuration(
 
-    value
+
+
+    value
+
+
 
 ) {
 
 
 
-    const names = {
 
 
 
-        "10m":
 
-            "10 minutes",
-
-
-
-        "15m":
-
-            "15 minutes",
-
-
-
-        "30m":
-
-            "30 minutes",
-
-
-
-        "45m":
-
-            "45 minutes",
-
-
-
-        "1h":
-
-            "1 heure",
-
-
-
-        "6h":
-
-            "6 heures",
-
-
-
-        "12h":
-
-            "12 heures",
-
-
-
-        "24h":
-
-            "24 heures",
-
-
-
-        permanent:
-
-            "Permanente"
-
-
-
-    };
+    const names = {
 
 
 
 
 
-    return (
 
-        names[value] ||
 
-        value
+        "10m":
 
-    );
+
+
+            "10 minutes",
+
+
+
+
+
+
+
+        "15m":
+
+
+
+            "15 minutes",
+
+
+
+
+
+
+
+        "30m":
+
+
+
+            "30 minutes",
+
+
+
+
+
+
+
+        "45m":
+
+
+
+            "45 minutes",
+
+
+
+
+
+
+
+        "1h":
+
+
+
+            "1 heure",
+
+
+
+
+
+
+
+        "6h":
+
+
+
+            "6 heures",
+
+
+
+
+
+
+
+        "12h":
+
+
+
+            "12 heures",
+
+
+
+
+
+
+
+        "24h":
+
+
+
+            "24 heures",
+
+
+
+
+
+
+
+        permanent:
+
+
+
+            "Permanente"
+
+
+
+
+
+
+
+    };
+
+
+
+
+
+
+
+
+
+
+
+    return (
+
+
+
+        names[value] ||
+
+
+
+        value
+
+
+
+    );
+
+
+
+
 
 
 
@@ -282,1247 +560,2497 @@ function formatDuration(
 
 
 
+
+
+
+
+
+
 // ==========================================
+
+
 
 // HANDLER
 
+
+
 // ==========================================
+
+
+
+
 
 
 
 module.exports = async (
 
-    client,
 
-    interaction
+
+    client,
+
+
+
+    interaction
+
+
 
 ) => {
 
 
 
-    if (
 
-        !interaction.isStringSelectMenu() &&
 
-        !interaction.isModalSubmit()
 
-    ) {
 
+    if (
 
 
-        return;
 
+        !interaction.isStringSelectMenu() &&
 
 
-    }
 
+        !interaction.isModalSubmit()
 
 
 
+    ) {
 
-    const id =
 
-        interaction.customId;
 
 
 
 
 
-    // ======================================
+        return;
 
-    // RAISON PERSONNALISÉE
 
-    // ======================================
 
 
 
-    if (
 
-        interaction.isModalSubmit() &&
 
-        id.startsWith(
+    }
 
-            "ban_custom_reason\_"
 
-        )
 
-    ) {
 
 
 
-        const parts =
 
-            id.split("\_");
 
 
 
 
+    const id =
 
-        const targetId =
 
-            parts[3];
 
+        interaction.customId;
 
 
 
 
-        const moderatorId =
 
-            parts[4];
 
 
 
 
 
-        if (
 
-            interaction.user.id !==
+    // ======================================
 
-            moderatorId
 
-        ) {
 
+    // RAISON PERSONNALISÉE
 
 
-            return interaction.reply({
 
+    // ======================================
 
 
-                content:
 
-                    "❌ Cette fenêtre appartient à un autre modérateur.",
 
 
 
-                ephemeral: true
 
+    if (
 
 
-            });
 
+        interaction.isModalSubmit() &&
 
 
-        }
 
+        id.startsWith(
 
 
 
+            "ban_custom_reason_"
 
-        const allowed =
 
-            interaction.member.roles.cache.some(
 
+        )
 
 
-                role =>
 
-                    BAN_ROLES.includes(
+    ) {
 
-                        role.id
 
-                    )
 
 
 
-            );
 
 
+        const parts =
 
 
 
-        if (!allowed) {
+            id.split("_");
 
 
 
-            return interaction.reply({
 
 
 
-                content:
 
-                    "❌ Tu n'as pas la permission.",
 
 
 
-                ephemeral: true
 
+        const targetId =
 
 
-            });
 
+            parts[3];
 
 
-        }
 
 
 
 
 
-        const reason =
 
-            interaction.fields
 
-                .getTextInputValue(
 
-                    "ban_custom_reason_text"
 
-                )
+        const moderatorId =
 
-                .trim();
 
 
+            parts[4];
 
 
 
-        if (
 
-            reason.length < 3
 
-        ) {
 
 
 
-            return interaction.reply({
 
 
 
-                content:
+        if (
 
-                    "❌ La raison doit contenir au moins 3 caractères.",
 
 
+            interaction.user.id !==
 
-                ephemeral: true
 
 
+            moderatorId
 
-            });
 
 
+        ) {
 
-        }
 
 
 
 
 
-        customReasons.set(
 
-            getCustomReasonKey(
+            return interaction.reply({
 
-                targetId,
 
-                moderatorId
 
-            ),
 
-            {
 
-                reason,
 
-                createdAt: Date.now()
 
-            }
+                content:
 
-        );
 
 
+                    "❌ Cette fenêtre appartient à un autre modérateur.",
 
 
 
-        return interaction.reply(
 
-            createDurationPayload(
 
-                targetId,
 
-                moderatorId,
 
-                "custom",
+                ephemeral: true
 
-                reason
 
-            )
 
-        );
 
 
 
-    }
 
+            });
 
 
 
 
-    if (
 
-        !interaction.isStringSelectMenu()
 
-    ) {
 
+        }
 
 
-        return;
 
 
 
-    }
 
 
 
 
 
-    // ======================================
 
-    // CHOIX DE LA RAISON
+        const allowed =
 
-    // ======================================
 
 
+            interaction.member.roles.cache.some(
 
-    if (
 
-        id.startsWith(
 
-            "ban_reason\_"
 
-        )
 
-    ) {
 
 
+                role =>
 
-        const parts =
 
-            id.split("\_");
 
+                    BAN_ROLES.includes(
 
 
 
+                        role.id
 
-        const targetId =
 
-            parts[2];
 
+                    )
 
 
 
 
-        const moderatorId =
 
-            parts[3];
 
 
+            );
 
 
 
-        // ==============================
 
-        // MODÉRATEUR
 
-        // ==============================
 
 
 
-        if (
 
-            interaction.user.id !==
 
-            moderatorId
 
-        ) {
+        if (!allowed) {
 
 
 
-            return interaction.reply({
 
 
 
-                content:
 
-                    "❌ Ce menu appartient à un autre modérateur.",
+            return interaction.reply({
 
 
 
-                ephemeral: true
 
 
 
-            });
 
+                content:
 
 
-        }
 
+                    "❌ Tu n'as pas la permission.",
 
 
 
 
-        // ==============================
 
-        // PERMISSION
 
-        // ==============================
 
+                ephemeral: true
 
 
-        const allowed =
 
-            interaction.member.roles.cache.some(
 
 
 
-                role =>
 
-                    BAN_ROLES.includes(
+            });
 
-                        role.id
 
-                    )
 
 
 
-            );
 
 
+        }
 
 
 
-        if (!allowed) {
 
 
 
-            return interaction.reply({
 
 
 
-                content:
 
-                    "❌ Tu n'as pas la permission.",
 
+        const reason =
 
 
-                ephemeral: true
 
+            interaction.fields
 
 
-            });
 
+                .getTextInputValue(
 
 
-        }
 
+                    "ban_custom_reason_text"
 
 
 
+                )
 
-        const reasonKey =
 
-            interaction.values[0];
 
+                .trim();
 
 
 
 
-        if (
 
-            reasonKey === "autre"
 
-        ) {
 
 
 
-            const modal =
 
-                new ModalBuilder()
 
+        if (
 
 
-                    .setCustomId(
 
-                        \`ban_custom_reason\_${targetId}\_${moderatorId}\`
+            reason.length < 3
 
-                    )
 
 
+        ) {
 
-                    .setTitle(
 
-                        "Raison personnalisée du ban");
 
 
 
 
 
-            const reasonInput =
+            return interaction.reply({
 
-                new TextInputBuilder()
 
 
 
-                    .setCustomId(
 
-                        "ban_custom_reason_text"
 
-                    )
 
+                content:
 
 
-                    .setLabel(
 
-                        "Indique la raison du ban"
+                    "❌ La raison doit contenir au moins 3 caractères.",
 
-                    )
 
 
 
-                    .setStyle(
 
-                        TextInputStyle.Paragraph
 
-                    )
 
+                ephemeral: true
 
 
-                    .setMinLength(3)
 
 
 
-                    .setMaxLength(500)
 
 
+            });
 
-                    .setRequired(true)
 
 
 
-                    .setPlaceholder(
 
-                        "Ex. Arnaque répétée envers les membres"
 
-                    );
 
+        }
 
 
 
 
-            modal.addComponents(
 
-                new ActionRowBuilder()
 
-                    .addComponents(
 
-                        reasonInput
 
-                    )
 
-            );
 
 
+        customReasons.set(
 
 
 
-            return interaction.showModal(
+            getCustomReasonKey(
 
-                modal
 
-            );
 
+                targetId,
 
 
-        }
 
+                moderatorId
 
 
 
+            ),
 
-        const reason =
 
-            REASONS[reasonKey] ||
 
-            "Autre";
+            {
 
 
 
+                reason,
 
 
-        return interaction.update(
 
-            createDurationPayload(
+                createdAt: Date.now()
 
-                targetId,
 
-                moderatorId,
 
-                reasonKey,
+            }
 
-                reason
 
-            )
 
-        );
+        );
 
 
 
-    }
 
 
 
 
 
-    // ======================================
 
-    // CHOIX DE LA DURÉE
 
-    // ======================================
 
+        return interaction.reply(
 
 
-    if (
 
-        !id.startsWith(
+            createDurationPayload(
 
-            "ban_duration\_"
 
-        )
 
-    ) {
+                targetId,
 
 
 
-        return;
+                moderatorId,
 
 
 
-    }
+                "custom",
 
 
 
+                reason
 
 
-    const parts =
 
-        id.split("\_");
+            )
 
 
 
+        );
 
 
-    const targetId =
 
-        parts[2];
 
 
 
 
+    }
 
-    const moderatorId =
 
-        parts[3];
 
 
 
 
 
-    const reasonKey =
 
-        parts[4];
 
 
 
+    if (
 
 
-    // ======================================
 
-    // MODÉRATEUR
+        !interaction.isStringSelectMenu()
 
-    // ======================================
 
 
+    ) {
 
-    if (
 
-        interaction.user.id !==
 
-        moderatorId
 
-    ) {
 
 
 
-        return interaction.reply({
+        return;
 
 
 
-            content:
 
-                "❌ Ce menu appartient à un autre modérateur.",
 
 
 
-            ephemeral: true
+    }
 
 
 
-        });
 
 
 
-    }
 
 
 
 
 
-    // ======================================
+    // ======================================
 
-    // PERMISSION
 
-    // ======================================
 
+    // CHOIX DE LA RAISON
 
 
-    const allowed =
 
-        interaction.member.roles.cache.some(
+    // ======================================
 
 
 
-            role =>
 
-                BAN_ROLES.includes(
 
-                    role.id
 
-                )
 
+    if (
 
 
-        );
 
+        id.startsWith(
 
 
 
+            "ban_reason_"
 
-    if (!allowed) {
 
 
+        )
 
-        return interaction.reply({
 
 
+    ) {
 
-            content:
 
-                "❌ Tu n'as pas la permission.",
 
 
 
-            ephemeral: true
 
 
+        const parts =
 
-        });
 
 
+            id.split("_");
 
-    }
 
 
 
 
 
-    const durationKey =
 
-        interaction.values[0];
 
 
 
 
+        const targetId =
 
-    let reason =
 
-        REASONS[reasonKey] ||
 
-        "Autre";
+            parts[2];
 
 
 
 
 
-    if (
 
-        reasonKey === "custom"
 
-    ) {
 
 
 
-        const customReason =
 
-            customReasons.get(
+        const moderatorId =
 
-                getCustomReasonKey(
 
-                    targetId,
 
-                    moderatorId
+            parts[3];
 
-                )
 
-            );
 
 
 
 
 
-        if (
 
-            !customReason ||
 
-            Date.now() - customReason.createdAt >
 
-                15 \* 60 \* 1000
 
-        ) {
+        // ==============================
 
 
 
-            return interaction.reply({
+        // MODÉRATEUR
 
 
 
-                content:
+        // ==============================
 
-                    "❌ La raison personnalisée a expiré. Recommence le ban.",
 
 
 
-                ephemeral: true
 
 
 
-            });
+        if (
 
 
 
-        }
+            interaction.user.id !==
 
 
 
+            moderatorId
 
 
-        reason =
 
-            customReason.reason;
+        ) {
 
 
 
-    }
 
 
 
 
+            return interaction.reply({
 
-    // ======================================
 
-    // RÉCUPÉRER LE MEMBRE
 
-    // ======================================
 
 
 
-    let target;
 
+                content:
 
 
-    try {
 
+                    "❌ Ce menu appartient à un autre modérateur.",
 
 
-        target =
 
-            await interaction.guild.members.fetch(
 
-                targetId
 
-            );
 
 
+                ephemeral: true
 
-    } catch {
 
 
 
-        return interaction.update({
 
 
 
-            embeds: [
+            });
 
 
 
-                new EmbedBuilder()
 
 
 
-                    .setColor(
 
-                        "#ED4245"
+        }
 
-                    )
 
 
 
-                    .setTitle(
 
-                        "❌ Membre introuvable"
 
-                    )
 
 
 
-                    .setDescription(
 
-                        "Le membre n'est plus présent sur le serveur."
 
-                    )
+        // ==============================
 
 
 
-            ],
+        // PERMISSION
 
 
 
-            components: []
+        // ==============================
 
 
 
-        });
 
 
 
-    }
 
+        const allowed =
 
 
 
+            interaction.member.roles.cache.some(
 
-    // ======================================
 
-    // HIÉRARCHIE
 
-    // ======================================
 
 
 
-    if (
 
-        target.roles.highest.position >=
+                role =>
 
-        interaction.member.roles.highest.position
 
-    ) {
 
+                    BAN_ROLES.includes(
 
 
-        return interaction.reply({
 
+                        role.id
 
 
-            content:
 
-                "❌ Tu ne peux pas bannir ce membre.",
+                    )
 
 
 
-            ephemeral: true
 
 
 
-        });
 
+            );
 
 
-    }
 
 
 
 
 
-    // ======================================
 
-    // PERMISSION BOT
 
-    // ======================================
 
 
+        if (!allowed) {
 
-    if (
 
-        !target.bannable
 
-    ) {
 
 
 
-        return interaction.reply({
 
+            return interaction.reply({
 
 
-            content:
 
-                "❌ Je ne peux pas bannir ce membre.",
 
 
 
-            ephemeral: true
 
+                content:
 
 
-        });
 
+                    "❌ Tu n'as pas la permission.",
 
 
-    }
 
 
 
 
 
-    // ======================================
+                ephemeral: true
 
-    // BAN
 
-    // ======================================
 
 
 
-    try {
 
 
+            });
 
-        await target.ban({
 
 
 
-            deleteMessageSeconds:
 
-                0,
 
 
+        }
 
-            reason:
 
-                \`${reason} | Modérateur : ${interaction.user.tag}\`
 
 
 
-        });
 
 
 
-    } catch (error) {
 
 
 
-        console.error(
+        const reasonKey =
 
-            "❌ Erreur ban :",
 
-            error
 
-        );
+            interaction.values[0];
 
 
 
-        return interaction.reply({
 
 
 
-            content:
 
-                "❌ Impossible de bannir ce membre.",
 
 
 
-            ephemeral: true
 
+        if (
 
 
-        });
 
+            reasonKey === "autre"
 
 
-    }
 
+        ) {
 
 
 
 
-    if (
 
-        reasonKey === "custom"
 
-    ) {
 
+            const modal =
 
 
-        customReasons.delete(
 
-            getCustomReasonKey(
+                new ModalBuilder()
 
-                targetId,
 
-                moderatorId
 
-            )
 
-        );
 
 
 
-    }
+                    .setCustomId(
 
 
 
+                        `ban_custom_reason_${targetId}_${moderatorId}`
 
 
-    // ======================================
 
-    // EXPIRATION
+                    )
 
-    // ======================================
 
 
 
-    let expirationText =
 
-        "🔒 Permanente";
 
 
+                    .setTitle(
 
 
 
-    if (
+                        "Raison personnalisée du ban");
 
-        durationKey !==
 
-        "permanent"
 
-    ) {
 
 
 
-        const expires =
 
-            Date.now() +
 
-            DURATIONS[durationKey];
 
 
 
+            const reasonInput =
 
 
-        expirationText =
 
-            \`\<t:${Math.floor(expires / 1000)}:F>\`;
+                new TextInputBuilder()
 
 
 
-    }
 
 
 
 
+                    .setCustomId(
 
-    // ======================================
 
-    // LOG
 
-    // ======================================
+                        "ban_custom_reason_text"
 
 
 
-    const logChannel =
+                    )
 
-        interaction.guild.channels.cache.get(
 
-            LOG_CHANNEL
 
-        );
 
 
 
 
+                    .setLabel(
 
-    if (logChannel) {
 
 
+                        "Indique la raison du ban"
 
-        const logEmbed =
 
-            new EmbedBuilder()
 
+                    )
 
 
-                .setColor(
 
-                    "#ED4245"
 
-                )
 
 
 
-                .setTitle(
+                    .setStyle(
 
-                    "🔨 Membre banni"
 
-                )
 
+                        TextInputStyle.Paragraph
 
 
-                .setThumbnail(
 
+                    )
 
 
-                    target.user.displayAvatarURL({
 
 
 
-                        dynamic: true,
 
 
+                    .setMinLength(3)
 
-                        size: 512
 
 
 
-                    })
 
 
 
-                )
+                    .setMaxLength(500)
 
 
 
-                .setDescription(
 
-\`
 
-👤 \*\*Membre\*\*
 
 
+                    .setRequired(true)
 
-\*\*${target.user.tag}\*\*
 
 
 
-🆔 \*\*ID\*\*
 
 
 
-\\\`${target.id}\\\`
+                    .setPlaceholder(
+
+
+
+                        "Ex. Arnaque répétée envers les membres"
+
+
+
+                    );
+
+
+
+
+
+
+
+
+
+
+
+            modal.addComponents(
+
+
+
+                new ActionRowBuilder()
+
+
+
+                    .addComponents(
+
+
+
+                        reasonInput
+
+
+
+                    )
+
+
+
+            );
+
+
+
+
+
+
+
+
+
+
+
+            return interaction.showModal(
+
+
+
+                modal
+
+
+
+            );
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        const reason =
+
+
+
+            REASONS[reasonKey] ||
+
+
+
+            "Autre";
+
+
+
+
+
+
+
+
+
+
+
+        return interaction.update(
+
+
+
+            createDurationPayload(
+
+
+
+                targetId,
+
+
+
+                moderatorId,
+
+
+
+                reasonKey,
+
+
+
+                reason
+
+
+
+            )
+
+
+
+        );
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // CHOIX DE LA DURÉE
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    if (
+
+
+
+        !id.startsWith(
+
+
+
+            "ban_duration_"
+
+
+
+        )
+
+
+
+    ) {
+
+
+
+
+
+
+
+        return;
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    const parts =
+
+
+
+        id.split("_");
+
+
+
+
+
+
+
+
+
+
+
+    const targetId =
+
+
+
+        parts[2];
+
+
+
+
+
+
+
+
+
+
+
+    const moderatorId =
+
+
+
+        parts[3];
+
+
+
+
+
+
+
+
+
+
+
+    const reasonKey =
+
+
+
+        parts[4];
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // MODÉRATEUR
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    if (
+
+
+
+        interaction.user.id !==
+
+
+
+        moderatorId
+
+
+
+    ) {
+
+
+
+
+
+
+
+        return interaction.reply({
+
+
+
+
+
+
+
+            content:
+
+
+
+                "❌ Ce menu appartient à un autre modérateur.",
+
+
+
+
+
+
+
+            ephemeral: true
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // PERMISSION
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    const allowed =
+
+
+
+        interaction.member.roles.cache.some(
+
+
+
+
+
+
+
+            role =>
+
+
+
+                BAN_ROLES.includes(
+
+
+
+                    role.id
+
+
+
+                )
+
+
+
+
+
+
+
+        );
+
+
+
+
+
+
+
+
+
+
+
+    if (!allowed) {
+
+
+
+
+
+
+
+        return interaction.reply({
+
+
+
+
+
+
+
+            content:
+
+
+
+                "❌ Tu n'as pas la permission.",
+
+
+
+
+
+
+
+            ephemeral: true
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    const durationKey =
+
+
+
+        interaction.values[0];
+
+
+
+
+
+
+
+
+
+
+
+    let reason =
+
+
+
+        REASONS[reasonKey] ||
+
+
+
+        "Autre";
+
+
+
+
+
+
+
+
+
+
+
+    if (
+
+
+
+        reasonKey === "custom"
+
+
+
+    ) {
+
+
+
+
+
+
+
+        const customReason =
+
+
+
+            customReasons.get(
+
+
+
+                getCustomReasonKey(
+
+
+
+                    targetId,
+
+
+
+                    moderatorId
+
+
+
+                )
+
+
+
+            );
+
+
+
+
+
+
+
+
+
+
+
+        if (
+
+
+
+            !customReason ||
+
+
+
+            Date.now() - customReason.createdAt >
+
+
+
+                15 * 60 * 1000
+
+
+
+        ) {
+
+
+
+
+
+
+
+            return interaction.reply({
+
+
+
+
+
+
+
+                content:
+
+
+
+                    "❌ La raison personnalisée a expiré. Recommence le ban.",
+
+
+
+
+
+
+
+                ephemeral: true
+
+
+
+
+
+
+
+            });
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+        reason =
+
+
+
+            customReason.reason;
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // RÉCUPÉRER LE MEMBRE
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    let target;
+
+
+
+
+
+
+
+    try {
+
+
+
+
+
+
+
+        target =
+
+
+
+            await interaction.guild.members.fetch(
+
+
+
+                targetId
+
+
+
+            );
+
+
+
+
+
+
+
+    } catch {
+
+
+
+
+
+
+
+        return interaction.update({
+
+
+
+
+
+
+
+            embeds: [
+
+
+
+
+
+
+
+                new EmbedBuilder()
+
+
+
+
+
+
+
+                    .setColor(
+
+
+
+                        "#ED4245"
+
+
+
+                    )
+
+
+
+
+
+
+
+                    .setTitle(
+
+
+
+                        "❌ Membre introuvable"
+
+
+
+                    )
+
+
+
+
+
+
+
+                    .setDescription(
+
+
+
+                        "Le membre n'est plus présent sur le serveur."
+
+
+
+                    )
+
+
+
+
+
+
+
+            ],
+
+
+
+
+
+
+
+            components: []
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // HIÉRARCHIE
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    if (
+
+
+
+        target.roles.highest.position >=
+
+
+
+        interaction.member.roles.highest.position
+
+
+
+    ) {
+
+
+
+
+
+
+
+        return interaction.reply({
+
+
+
+
+
+
+
+            content:
+
+
+
+                "❌ Tu ne peux pas bannir ce membre.",
+
+
+
+
+
+
+
+            ephemeral: true
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // PERMISSION BOT
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    if (
+
+
+
+        !target.bannable
+
+
+
+    ) {
+
+
+
+
+
+
+
+        return interaction.reply({
+
+
+
+
+
+
+
+            content:
+
+
+
+                "❌ Je ne peux pas bannir ce membre.",
+
+
+
+
+
+
+
+            ephemeral: true
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // BAN
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    try {
+
+
+
+
+
+
+
+        await target.ban({
+
+
+
+
+
+
+
+            deleteMessageSeconds:
+
+
+
+                0,
+
+
+
+
+
+
+
+            reason:
+
+
+
+                `${reason} | Modérateur : ${interaction.user.tag}`
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    } catch (error) {
+
+
+
+
+
+
+
+        console.error(
+
+
+
+            "❌ Erreur ban :",
+
+
+
+            error
+
+
+
+        );
+
+
+
+
+
+
+
+        return interaction.reply({
+
+
+
+
+
+
+
+            content:
+
+
+
+                "❌ Impossible de bannir ce membre.",
+
+
+
+
+
+
+
+            ephemeral: true
+
+
+
+
+
+
+
+        });
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    if (
+
+
+
+        reasonKey === "custom"
+
+
+
+    ) {
+
+
+
+
+
+
+
+        customReasons.delete(
+
+
+
+            getCustomReasonKey(
+
+
+
+                targetId,
+
+
+
+                moderatorId
+
+
+
+            )
+
+
+
+        );
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // EXPIRATION
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    let expirationText =
+
+
+
+        "🔒 Permanente";
+
+
+
+
+
+
+
+
+
+
+
+    if (
+
+
+
+        durationKey !==
+
+
+
+        "permanent"
+
+
+
+    ) {
+
+
+
+
+
+
+
+        const expires =
+
+
+
+            Date.now() +
+
+
+
+            DURATIONS[durationKey];
+
+
+
+
+
+
+
+
+
+
+
+        expirationText =
+
+
+
+            `\\<t:${Math.floor(expires / 1000)}:F>`;
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    // ======================================
+
+
+
+    // LOG
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    const logChannel =
+
+
+
+        interaction.guild.channels.cache.get(
+
+
+
+            LOG_CHANNEL
+
+
+
+        );
+
+
+
+
+
+
+
+
+
+
+
+    if (logChannel) {
+
+
+
+
+
+
+
+        const logEmbed =
+
+
+
+            new EmbedBuilder()
+
+
+
+
+
+
+
+                .setColor(
+
+
+
+                    "#ED4245"
+
+
+
+                )
+
+
+
+
+
+
+
+                .setTitle(
+
+
+
+                    "🔨 Membre banni"
+
+
+
+                )
+
+
+
+
+
+
+
+                .setThumbnail(
+
+
+
+
+
+
+
+                    target.user.displayAvatarURL({
+
+
+
+
+
+
+
+                        dynamic: true,
+
+
+
+
+
+
+
+                        size: 512
+
+
+
+
+
+
+
+                    })
+
+
+
+
+
+
+
+                )
+
+
+
+
+
+
+
+                .setDescription(
+
+
+
+`
+
+
+
+👤 **Membre**
+
+
+
+
+
+
+
+**${target.user.tag}**
+
+
+
+
+
+
+
+🆔 **ID**
+
+
+
+
+
+
+
+\`${target.id}\`
+
+
+
+
 
 
 
@@ -1530,7 +3058,15 @@ module.exports = async (
 
 
 
-🛡️ \*\*Banni par\*\*
+
+
+
+
+🛡️ **Banni par**
+
+
+
+
 
 
 
@@ -1538,31 +3074,61 @@ ${interaction.user}
 
 
 
-📝 \*\*Raison\*\*
 
 
 
-\*\*${reason}\*\*
+
+📝 **Raison**
 
 
 
-⏱️ \*\*Durée\*\*
 
 
 
-\*\*${formatDuration(durationKey)}\*\*
+
+**${reason}**
 
 
 
-🔓 \*\*Expiration\*\*
+
+
+
+
+⏱️ **Durée**
+
+
+
+
+
+
+
+**${formatDuration(durationKey)}**
+
+
+
+
+
+
+
+🔓 **Expiration**
+
+
+
+
 
 
 
 ${expirationText}
 
-\`
 
-                )
+
+`
+
+
+
+                )
+
+
 
 .setTimestamp();
 
@@ -1570,107 +3136,219 @@ ${expirationText}
 
 
 
-        await logChannel.send({
-
-
-
-            embeds: [
-
-                logEmbed
-
-            ]
-
-
-
-        });
-
-
-
-    }
 
 
 
 
 
-    // ======================================
 
-    // CONFIRMATION
-
-    // ======================================
+        await logChannel.send({
 
 
 
-    return interaction.update({
 
 
 
-        embeds: [
+
+            embeds: [
 
 
 
-            new EmbedBuilder()
+                logEmbed
 
 
 
-                .setColor(
-
-                    "#57F287"
-
-                )
+            ]
 
 
 
-                .setTitle(
-
-                    "🔨 Ban effectué"
-
-                )
 
 
 
-                .setDescription(
 
-\`
-
-👤 \*\*Membre :\*\* ${target.user.tag}
+        });
 
 
 
-🛡️ \*\*Modérateur :\*\* ${interaction.user}
 
 
 
-📝 \*\*Raison :\*\* ${reason}
+
+    }
 
 
 
-⏱️ \*\*Durée :\*\* ${formatDuration(durationKey)}
 
 
 
-🔓 \*\*Expiration :\*\* ${expirationText}
 
-\`
 
-                )
+
+
+
+    // ======================================
+
+
+
+    // CONFIRMATION
+
+
+
+    // ======================================
+
+
+
+
+
+
+
+    return interaction.update({
+
+
+
+
+
+
+
+        embeds: [
+
+
+
+
+
+
+
+            new EmbedBuilder()
+
+
+
+
+
+
+
+                .setColor(
+
+
+
+                    "#57F287"
+
+
+
+                )
+
+
+
+
+
+
+
+                .setTitle(
+
+
+
+                    "🔨 Ban effectué"
+
+
+
+                )
+
+
+
+
+
+
+
+                .setDescription(
+
+
+
+`
+
+
+
+👤 **Membre :** ${target.user.tag}
+
+
+
+
+
+
+
+🛡️ **Modérateur :** ${interaction.user}
+
+
+
+
+
+
+
+📝 **Raison :** ${reason}
+
+
+
+
+
+
+
+⏱️ **Durée :** ${formatDuration(durationKey)}
+
+
+
+
+
+
+
+🔓 **Expiration :** ${expirationText}
+
+
+
+`
+
+
+
+                )
+
+
 
 .setTimestamp()
 
 
 
-        ],
 
 
 
-        components: []
+
+        ],
 
 
 
-    });
+
+
+
+
+        components: []
+
+
+
+
+
+
+
+    });
+
+
+
+
 
 
 
 };
+
+
+
+
+
+
 
 
 
@@ -1682,17 +3360,37 @@ const customReasons = new Map();
 
 
 
+
+
+
+
+
+
 function getCustomReasonKey(
 
-    targetId,
 
-    moderatorId
+
+    targetId,
+
+
+
+    moderatorId
+
+
 
 ) {
 
 
 
-    return \`${targetId}:${moderatorId}\`;
+
+
+
+
+    return `${targetId}:${moderatorId}`;
+
+
+
+
 
 
 
@@ -1702,105 +3400,213 @@ function getCustomReasonKey(
 
 
 
+
+
+
+
+
+
 function createDurationPayload(
 
-    targetId,
 
-    moderatorId,
 
-    reasonKey,
+    targetId,
 
-    reason
+
+
+    moderatorId,
+
+
+
+    reasonKey,
+
+
+
+    reason
+
+
 
 ) {
 
 
 
-    const durationMenu =
-
-        new StringSelectMenuBuilder()
 
 
 
-            .setCustomId(
 
-                \`ban_duration\_${targetId}\_${moderatorId}\_${reasonKey}\`
-
-            )
+    const durationMenu =
 
 
 
-            .setPlaceholder(
-
-                "⏱️ Choisis la durée du ban"
-
-            )
-
-
-
-            .addOptions([
-
-
-
-                { label: "10 minutes", value: "10m", emoji: "🟢" },
-
-                { label: "15 minutes", value: "15m", emoji: "🟢" },
-
-                { label: "30 minutes", value: "30m", emoji: "🟡" },
-
-                { label: "45 minutes", value: "45m", emoji: "🟠" },
-
-                { label: "1 heure", value: "1h", emoji: "🟠" },
-
-                { label: "6 heures", value: "6h", emoji: "🔴" },
-
-                { label: "12 heures", value: "12h", emoji: "🔴" },
-
-                { label: "24 heures", value: "24h", emoji: "🔴" },
-
-                { label: "Permanent", value: "permanent", emoji: "🔒" }
-
-
-
-            ]);
+        new StringSelectMenuBuilder()
 
 
 
 
 
-    return {
+
+
+            .setCustomId(
 
 
 
-        embeds: [
+                `ban_duration_${targetId}_${moderatorId}_${reasonKey}`
 
 
 
-            new EmbedBuilder()
+            )
 
 
 
-                .setColor(
-
-                    "#ED4245"
-
-                )
 
 
 
-                .setTitle(
 
-                    "⏱️ Durée du ban"
-
-                )
+            .setPlaceholder(
 
 
 
-                .setDescription(
+                "⏱️ Choisis la durée du ban"
 
-\`
 
-👤 \*\*Membre\*\*
+
+            )
+
+
+
+
+
+
+
+            .addOptions([
+
+
+
+
+
+
+
+                { label: "10 minutes", value: "10m", emoji: "🟢" },
+
+
+
+                { label: "15 minutes", value: "15m", emoji: "🟢" },
+
+
+
+                { label: "30 minutes", value: "30m", emoji: "🟡" },
+
+
+
+                { label: "45 minutes", value: "45m", emoji: "🟠" },
+
+
+
+                { label: "1 heure", value: "1h", emoji: "🟠" },
+
+
+
+                { label: "6 heures", value: "6h", emoji: "🔴" },
+
+
+
+                { label: "12 heures", value: "12h", emoji: "🔴" },
+
+
+
+                { label: "24 heures", value: "24h", emoji: "🔴" },
+
+
+
+                { label: "Permanent", value: "permanent", emoji: "🔒" }
+
+
+
+
+
+
+
+            ]);
+
+
+
+
+
+
+
+
+
+
+
+    return {
+
+
+
+
+
+
+
+        embeds: [
+
+
+
+
+
+
+
+            new EmbedBuilder()
+
+
+
+
+
+
+
+                .setColor(
+
+
+
+                    "#ED4245"
+
+
+
+                )
+
+
+
+
+
+
+
+                .setTitle(
+
+
+
+                    "⏱️ Durée du ban"
+
+
+
+                )
+
+
+
+
+
+
+
+                .setDescription(
+
+
+
+`
+
+
+
+👤 **Membre**
+
+
+
+
 
 
 
@@ -1808,11 +3614,23 @@ function createDurationPayload(
 
 
 
-📝 \*\*Raison\*\*
 
 
 
-\*\*${reason}\*\*
+
+📝 **Raison**
+
+
+
+
+
+
+
+**${reason}**
+
+
+
+
 
 
 
@@ -1820,35 +3638,71 @@ function createDurationPayload(
 
 
 
-⏱️ \*\*Choisis maintenant la durée du ban.\*\*
 
-\`
 
-                )
+
+
+⏱️ **Choisis maintenant la durée du ban.**
+
+
+
+`
+
+
+
+                )
+
+
 
 ],
 
 
 
-        components: [
 
 
 
-            new ActionRowBuilder()
 
-                .addComponents(
-
-                    durationMenu
-
-                )
+        components: [
 
 
 
-        ]
 
 
 
-    };
+
+            new ActionRowBuilder()
+
+
+
+                .addComponents(
+
+
+
+                    durationMenu
+
+
+
+                )
+
+
+
+
+
+
+
+        ]
+
+
+
+
+
+
+
+    };
+
+
+
+
 
 
 
