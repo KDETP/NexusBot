@@ -21,172 +21,172 @@ module.exports = async (
     member
 ) => {
 
-
-    // ======================================
-    // ANTI RAID
-    // ======================================
-
-    const now =
-        Date.now();
-
-
-    joins.push(now);
-
-
-    while (
-        joins.length &&
-        now - joins[0] > 60000
-    ) {
-
-        joins.shift();
-
-    }
-
-
-    if (
-        joins.length >= 10 &&
-        !protection.panic
-    ) {
-
-        protection.enablePanic();
-
-
-        const general =
-            member.guild.channels.cache.get(
-                "1532756693878837381"
-            );
-
-
-        if (general) {
-
-            await general.send({
-
-                content:
-                    "🚨 **RAID DÉTECTÉ !**\n\nLe mode Panic a été activé automatiquement."
-
-            });
-
-        }
-
-
-        const logs =
-            member.guild.channels.cache.get(
-                "1534951215413067876"
-            );
-
-
-        if (logs) {
-
-            await logs.send({
-
-                content:
-                    `🚨 AntiRaid : ${joins.length} arrivées en moins d'une minute.`
-
-            });
-
-        }
-
-    }
-
-
-    // ======================================
-    // DETECTION INVITATION
-    // ======================================
-
-    let usedInvite = null;
-
-
     try {
 
-        usedInvite =
-            await inviteManager.getUsedInvite(
-                member.guild
+        // ======================================
+        // ANTI RAID
+        // ======================================
+
+        const now =
+            Date.now();
+
+        joins.push(now);
+
+
+        while (
+            joins.length &&
+            now - joins[0] > 60000
+        ) {
+
+            joins.shift();
+
+        }
+
+
+        if (
+            joins.length >= 10 &&
+            !protection.panic
+        ) {
+
+            protection.enablePanic();
+
+
+            const general =
+                member.guild.channels.cache.get(
+                    "1532756693878837381"
+                );
+
+
+            if (general) {
+
+                await general.send({
+
+                    content:
+                        "🚨 **RAID DÉTECTÉ !**\n\nLe mode Panic a été activé automatiquement."
+
+                });
+
+            }
+
+
+            const logs =
+                member.guild.channels.cache.get(
+                    "1534951215413067876"
+                );
+
+
+            if (logs) {
+
+                await logs.send({
+
+                    content:
+                        `🚨 AntiRaid : ${joins.length} arrivées en moins d'une minute.`
+
+                });
+
+            }
+
+        }
+
+
+        // ======================================
+        // DETECTION INVITATION
+        // ======================================
+
+        let usedInvite = null;
+
+
+        try {
+
+            usedInvite =
+                await inviteManager.getUsedInvite(
+                    member.guild
+                );
+
+        } catch (error) {
+
+            console.error(
+                "❌ Erreur détection invitation :",
+                error
             );
 
-    } catch (error) {
-
-        console.error(
-            "❌ Erreur détection invitation :",
-            error
-        );
-
-    }
+        }
 
 
-    // ======================================
-    // RECUPERER L'INVITEUR
-    // ======================================
+        // ======================================
+        // RECUPERER L'INVITEUR
+        // ======================================
 
-    let inviter = null;
-
-
-    if (
-        usedInvite &&
-        usedInvite.inviter
-    ) {
-
-        inviter =
-            usedInvite.inviter;
+        let inviter = null;
 
 
-        // Ajouter +1 invitation
-        inviteManager.addInvite(
+        if (
+            usedInvite &&
+            usedInvite.inviter
+        ) {
 
-            member.guild.id,
-
-            inviter.id,
-
-            member.id,
-
-            usedInvite.code
-
-        );
-
-    }
+            inviter =
+                usedInvite.inviter;
 
 
-    // ======================================
-    // SALON BIENVENUE
-    // ======================================
+            // Ajouter +1 invitation
+            inviteManager.addInvite(
 
-    const welcome =
-        member.guild.channels.cache.get(
-            "1415335842364260432"
-        );
+                member.guild.id,
 
+                inviter.id,
 
-    if (welcome) {
+                member.id,
 
-        const members =
-            member.guild.members.cache.filter(
-                m => !m.user.bot
-            ).size;
+                usedInvite.code
+
+            );
+
+        }
 
 
-        const embed =
-            new EmbedBuilder()
+        // ======================================
+        // SALON BIENVENUE
+        // ======================================
 
-                .setColor(
-                    "#8B5CF6"
-                )
+        const welcome =
+            member.guild.channels.cache.get(
+                "1415335842364260432"
+            );
 
-                .setTitle(
-                    "🌌 Bienvenue sur NebuCommunity !"
-                )
 
-                .setThumbnail(
+        if (welcome) {
 
-                    member.user.displayAvatarURL({
+            const members =
+                member.guild.members.cache.filter(
+                    m => !m.user.bot
+                ).size;
 
-                        dynamic: true,
 
-                        size: 1024
+            const embed =
+                new EmbedBuilder()
 
-                    })
+                    .setColor(
+                        "#8B5CF6"
+                    )
 
-                )
+                    .setTitle(
+                        "🌌 Bienvenue sur NebuCommunity !"
+                    )
 
-                .setDescription(
+                    .setThumbnail(
+
+                        member.user.displayAvatarURL({
+
+                            dynamic: true,
+
+                            size: 1024
+
+                        })
+
+                    )
+
+                    .setDescription(
 `
 👋 Bienvenue dans la communauté, ${member} !
 
@@ -208,93 +208,97 @@ module.exports = async (
 
 💜 Nous sommes heureux de t'accueillir parmi nous !
 `
-                )
+                    )
 
-                .setFooter({
+                    .setFooter({
 
-                    text:
-                        "NebuBot • Bienvenue"
-
-                })
-
-                .setTimestamp();
-
-
-        await welcome.send({
-
-            content:
-                `${member}`,
-
-            embeds: [
-                embed
-            ],
-
-            allowedMentions: {
-
-                users: [
-                    member.id
-                ]
-
-            }
-
-        });
-
-    }
-
-
-    // ======================================
-    // MESSAGE INVITATION
-    // ======================================
-
-    const inviteChannel =
-        member.guild.channels.cache.get(
-            "1415861046350184508"
-        );
-
-
-    if (
-        inviteChannel &&
-        inviter
-    ) {
-
-        const count =
-            await inviteManager.getInvites(
-
-                member.guild.id,
-
-                inviter.id
-
-            );
-
-
-        // ==================================
-        // EMBED INVITATION
-        // ==================================
-
-        const inviteEmbed =
-            new EmbedBuilder()
-
-                .setColor(
-                    "#57F287"
-                )
-
-                .setTitle(
-                    "📨 Nouvelle invitation !"
-                )
-
-                .setThumbnail(
-
-                    member.user.displayAvatarURL({
-
-                        dynamic: true,
-
-                        size: 512
+                        text:
+                            "NebuBot • Bienvenue"
 
                     })
 
-                )
+                    .setTimestamp();
 
-                .setDescription(
+
+            /*
+             * Une seule mention ici.
+             */
+
+            await welcome.send({
+
+                content:
+                    `<@${member.id}>`,
+
+                embeds: [
+                    embed
+                ],
+
+                allowedMentions: {
+
+                    users: [
+                        member.id
+                    ]
+
+                }
+
+            });
+
+        }
+
+
+        // ======================================
+        // MESSAGE INVITATION
+        // ======================================
+
+        const inviteChannel =
+            member.guild.channels.cache.get(
+                "1415861046350184508"
+            );
+
+
+        if (
+            inviteChannel &&
+            inviter
+        ) {
+
+            const count =
+                await inviteManager.getInvites(
+
+                    member.guild.id,
+
+                    inviter.id
+
+                );
+
+
+            // ==================================
+            // EMBED INVITATION
+            // ==================================
+
+            const inviteEmbed =
+                new EmbedBuilder()
+
+                    .setColor(
+                        "#57F287"
+                    )
+
+                    .setTitle(
+                        "📨 Nouvelle invitation !"
+                    )
+
+                    .setThumbnail(
+
+                        member.user.displayAvatarURL({
+
+                            dynamic: true,
+
+                            size: 512
+
+                        })
+
+                    )
+
+                    .setDescription(
 `
 👤 ${member} vient de rejoindre le serveur !
 
@@ -312,37 +316,76 @@ ${inviter}
 
 🎉 Merci de faire grandir **NebuCommunity** ! 💜
 `
+                    )
+
+                    .setFooter({
+
+                        text:
+                            "NebuBot • Système d'invitations"
+
+                    })
+
+                    .setTimestamp();
+
+
+            /*
+             * Protection contre les doublons.
+             *
+             * Si, pour une raison quelconque,
+             * member.id === inviter.id,
+             * Discord ne recevra qu'une seule valeur.
+             */
+
+            const mentionIds = [
+                member.id,
+                inviter.id
+            ];
+
+
+            const uniqueMentionIds = [
+                ...new Set(
+                    mentionIds
                 )
-
-                .setFooter({
-
-                    text:
-                        "NebuBot • Système d'invitations"
-
-                })
-
-                .setTimestamp();
+            ];
 
 
-        await inviteChannel.send({
+            const content =
+                member.id === inviter.id
+                    ? `<@${member.id}>`
+                    : `<@${member.id}> <@${inviter.id}>`;
 
-            content:
-                `${member} ${inviter}`,
 
-            embeds: [
-                inviteEmbed
-            ],
+            await inviteChannel.send({
 
-            allowedMentions: {
+                content,
 
-                users: [
-                    member.id,
-                    inviter.id
-                ]
+                embeds: [
+                    inviteEmbed
+                ],
 
-            }
+                allowedMentions: {
 
-        });
+                    users:
+                        uniqueMentionIds
+
+                }
+
+            });
+
+        }
+
+
+    } catch (error) {
+
+        /*
+         * Une erreur du système de bienvenue/invitation
+         * ne doit jamais faire planter l'event.
+         */
+
+        console.error(
+            "❌ Erreur système guildMemberAdd :",
+            error
+        );
 
     }
 
