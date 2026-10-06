@@ -10,14 +10,21 @@ const statsPath = path.join(
 
 
 // =========================================================
-// CACHE DES COMPTEURS PAR SERVEUR
+// CACHE DES COMPTEURS
 // =========================================================
 
 const guildStatsCache = new Map();
 
 
 // =========================================================
-// LECTURE DU FICHIER
+// FILE D'ATTENTE DES MISES À JOUR
+// =========================================================
+
+const updateTimers = new Map();
+
+
+// =========================================================
+// LECTURE CONFIG
 // =========================================================
 
 function loadConfig() {
@@ -53,7 +60,7 @@ function loadConfig() {
 
 
 // =========================================================
-// CREER / ACTUALISER LE CACHE D'UN SERVEUR
+// INITIALISATION D'UN SERVEUR
 // =========================================================
 
 async function initializeGuildStats(guild) {
@@ -62,22 +69,43 @@ async function initializeGuildStats(guild) {
 
         /*
          * IMPORTANT :
-         * On fait UN SEUL fetch complet au démarrage.
-         * Ensuite les événements guildMemberAdd / Remove
-         * mettent simplement les compteurs à jour.
+         *
+         * NE PAS utiliser guild.members.fetch()
+         *
+         * guild.memberCount est directement fourni
+         * par Discord et évite de récupérer tous
+         * les membres du serveur.
          */
 
-        await guild.members.fetch();
+        const total =
+            guild.memberCount;
 
-        const members =
-            guild.members.cache.filter(
-                member => !member.user.bot
-            ).size;
+
+        /*
+         * On compte uniquement les bots actuellement
+         * présents dans le cache Discord.
+         *
+         * On ne force surtout pas un fetch complet.
+         */
 
         const bots =
             guild.members.cache.filter(
-                member => member.user.bot
+                member =>
+                    member.user.bot
             ).size;
+
+
+        /*
+         * Le total Discord est fiable.
+         *
+         * On déduit les membres humains.
+         */
+
+        const members =
+            Math.max(
+                0,
+                total - bots
+            );
 
 
         guildStatsCache.set(
@@ -110,7 +138,7 @@ async function initializeGuildStats(guild) {
 
 
 // =========================================================
-// METTRE A JOUR LES CHANNELS
+// MISE À JOUR DES CHANNELS
 // =========================================================
 
 async function updateChannels(guild) {
@@ -130,31 +158,45 @@ async function updateChannels(guild) {
                 guild.id
             );
 
-
         if (!cached) {
             return;
         }
 
 
+        /*
+         * Le total vient directement de Discord.
+         */
+
         const total =
             guild.memberCount;
 
+
         const members =
-            cached.members;
+            Math.max(
+                0,
+                total - cached.bots
+            );
+
 
         const bots =
             cached.bots;
 
+
+        // =====================================================
+        // RÉCUPÉRER LES CHANNELS
+        // =====================================================
 
         const totalChannel =
             guild.channels.cache.get(
                 stats.total
             );
 
+
         const membersChannel =
             guild.channels.cache.get(
                 stats.members
             );
+
 
         const botsChannel =
             guild.channels.cache.get(
@@ -179,7 +221,9 @@ async function updateChannels(guild) {
                 await totalChannel.setName(
                     name
                 );
+
             }
+
         }
 
 
@@ -200,7 +244,9 @@ async function updateChannels(guild) {
                 await membersChannel.setName(
                     name
                 );
+
             }
+
         }
 
 
@@ -221,7 +267,9 @@ async function updateChannels(guild) {
                 await botsChannel.setName(
                     name
                 );
+
             }
+
         }
 
 
@@ -238,6 +286,54 @@ async function updateChannels(guild) {
         );
 
     }
+
+}
+
+
+// =========================================================
+// MISE À JOUR AVEC PETIT DÉLAI
+// =========================================================
+
+function queueUpdate(guild) {
+
+    if (
+        updateTimers.has(
+            guild.id
+        )
+    ) {
+
+        clearTimeout(
+            updateTimers.get(
+                guild.id
+            )
+        );
+
+    }
+
+
+    const timer =
+        setTimeout(
+            async () => {
+
+                updateTimers.delete(
+                    guild.id
+                );
+
+
+                await updateChannels(
+                    guild
+                );
+
+            },
+            1500
+        );
+
+
+    updateTimers.set(
+        guild.id,
+        timer
+    );
+
 }
 
 
@@ -257,17 +353,24 @@ async function handleMemberAdd(member) {
         );
 
 
+    // =====================================================
+    // SI LE CACHE N'EXISTE PAS
+    // =====================================================
+
     if (!cached) {
 
-        // Si le cache n'existe pas encore,
-        // on l'initialise une seule fois.
         await initializeGuildStats(
             guild
         );
 
         return;
+
     }
 
+
+    // =====================================================
+    // AJOUT
+    // =====================================================
 
     if (
         member.user.bot
@@ -288,9 +391,18 @@ async function handleMemberAdd(member) {
     );
 
 
-    await updateChannels(
+    /*
+     * On attend 1,5 seconde avant de modifier
+     * les salons.
+     *
+     * Si plusieurs personnes rejoignent rapidement,
+     * on évite de renommer les salons 15 fois.
+     */
+
+    queueUpdate(
         guild
     );
+
 }
 
 
@@ -310,6 +422,10 @@ async function handleMemberRemove(member) {
         );
 
 
+    // =====================================================
+    // SI LE CACHE N'EXISTE PAS
+    // =====================================================
+
     if (!cached) {
 
         await initializeGuildStats(
@@ -317,8 +433,13 @@ async function handleMemberRemove(member) {
         );
 
         return;
+
     }
 
+
+    // =====================================================
+    // RETRAIT
+    // =====================================================
 
     if (
         member.user.bot
@@ -347,9 +468,10 @@ async function handleMemberRemove(member) {
     );
 
 
-    await updateChannels(
+    queueUpdate(
         guild
     );
+
 }
 
 
@@ -361,8 +483,9 @@ module.exports = async (
     client
 ) => {
 
+
     // =====================================================
-    // DEMARRAGE
+    // DÉMARRAGE
     // =====================================================
 
     client.once(
@@ -373,10 +496,6 @@ module.exports = async (
                 "📊 Synchronisation des statistiques..."
             );
 
-
-            /*
-             * Chaque serveur est chargé une seule fois.
-             */
 
             for (
                 const guild
@@ -393,12 +512,13 @@ module.exports = async (
             console.log(
                 "✅ Statistiques synchronisées."
             );
+
         }
     );
 
 
     // =====================================================
-    // NOUVEAU MEMBRE
+    // MEMBRE QUI REJOINT
     // =====================================================
 
     client.on(
