@@ -1,5 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const { PermissionFlagsBits } = require("discord.js");
+
+const STATS = {
+    category: "1535298730528350218",
+    total: "1535298731908538480",
+    members: "1535298733208641566",
+    bots: "1535298734382911548"
+};
 
 const statsPath = path.join(
     __dirname,
@@ -8,544 +16,263 @@ const statsPath = path.join(
     "serverStats.json"
 );
 
-
-// =========================================================
-// CACHE DES COMPTEURS
-// =========================================================
-
 const guildStatsCache = new Map();
-
-
-// =========================================================
-// FILE D'ATTENTE DES MISES À JOUR
-// =========================================================
-
 const updateTimers = new Map();
+let initialized = false;
 
-
-// =========================================================
-// LECTURE CONFIG
-// =========================================================
-
-function loadConfig() {
-
-    if (!fs.existsSync(statsPath)) {
-
-        console.log(
-            "❌ serverStats.json introuvable."
-        );
-
-        return null;
-    }
-
+function ensureStatsFile() {
     try {
-
-        return JSON.parse(
-            fs.readFileSync(
-                statsPath,
-                "utf8"
-            )
+        fs.writeFileSync(
+            statsPath,
+            JSON.stringify(STATS, null, 4),
+            "utf8"
         );
-
     } catch (error) {
-
         console.error(
-            "❌ Impossible de lire serverStats.json :",
-            error
+            "❌ Impossible d'écrire serverStats.json :",
+            error.message
         );
-
-        return null;
     }
 }
 
+async function getStatsChannels(guild) {
+    const totalChannel = await guild.channels
+        .fetch(STATS.total)
+        .catch(() => null);
 
-// =========================================================
-// INITIALISATION D'UN SERVEUR
-// =========================================================
+    const membersChannel = await guild.channels
+        .fetch(STATS.members)
+        .catch(() => null);
 
-async function initializeGuildStats(guild) {
+    const botsChannel = await guild.channels
+        .fetch(STATS.bots)
+        .catch(() => null);
 
+    return {
+        totalChannel,
+        membersChannel,
+        botsChannel
+    };
+}
+
+function canManageChannel(guild, channel) {
+    if (!channel || !guild.members.me) {
+        return false;
+    }
+
+    return channel
+        .permissionsFor(guild.members.me)
+        ?.has(PermissionFlagsBits.ManageChannels) || false;
+}
+
+async function countBots(guild) {
     try {
-
         /*
-         * IMPORTANT :
-         *
-         * NE PAS utiliser guild.members.fetch()
-         *
-         * guild.memberCount est directement fourni
-         * par Discord et évite de récupérer tous
-         * les membres du serveur.
+         * Une seule récupération complète au démarrage.
+         * Aucun fetch complet lors des joins/leaves.
          */
+        await guild.members.fetch();
 
-        const total =
-            guild.memberCount;
-
-
-        /*
-         * On compte uniquement les bots actuellement
-         * présents dans le cache Discord.
-         *
-         * On ne force surtout pas un fetch complet.
-         */
-
-        const bots =
-            guild.members.cache.filter(
-                member =>
-                    member.user.bot
-            ).size;
-
-
-        /*
-         * Le total Discord est fiable.
-         *
-         * On déduit les membres humains.
-         */
-
-        const members =
-            Math.max(
-                0,
-                total - bots
-            );
-
-
-        guildStatsCache.set(
-            guild.id,
-            {
-                members,
-                bots
-            }
-        );
-
-
-        console.log(
-            `📊 Cache membres initialisé : ${guild.name} → ${members} membres | ${bots} bots`
-        );
-
-
-        await updateChannels(
-            guild
-        );
+        return guild.members.cache.filter(
+            member => member.user.bot
+        ).size;
 
     } catch (error) {
+        console.warn(
+            `⚠️ Impossible de récupérer tous les membres de ${guild.name}. ` +
+            "Utilisation du cache pour les bots."
+        );
 
+        return guild.members.cache.filter(
+            member => member.user.bot
+        ).size;
+    }
+}
+
+async function initializeGuildStats(guild) {
+    try {
+        const total = guild.memberCount;
+        const bots = await countBots(guild);
+        const members = Math.max(0, total - bots);
+
+        guildStatsCache.set(guild.id, {
+            members,
+            bots
+        });
+
+        console.log(
+            `📊 Cache membres initialisé : ${guild.name} → ` +
+            `${members} membres | ${bots} bots`
+        );
+
+        await updateChannels(guild);
+
+    } catch (error) {
         console.error(
             `❌ Erreur initialisation stats ${guild.name} :`,
             error
         );
-
     }
 }
 
-
-// =========================================================
-// MISE À JOUR DES CHANNELS
-// =========================================================
-
 async function updateChannels(guild) {
-
     try {
-
-        const stats =
-            loadConfig();
-
-        if (!stats) {
-            return;
-        }
-
-
-        const cached =
-            guildStatsCache.get(
-                guild.id
-            );
+        const cached = guildStatsCache.get(guild.id);
 
         if (!cached) {
             return;
         }
 
+        const total = guild.memberCount;
+        const bots = Math.max(0, cached.bots);
+        const members = Math.max(0, total - bots);
 
-        /*
-         * Le total vient directement de Discord.
-         */
+        const {
+            totalChannel,
+            membersChannel,
+            botsChannel
+        } = await getStatsChannels(guild);
 
-        const total =
-            guild.memberCount;
-
-
-        const members =
-            Math.max(
-                0,
-                total - cached.bots
+        if (!totalChannel) {
+            console.error(
+                `❌ Salon TOTAL introuvable : ${STATS.total}`
             );
-
-
-        const bots =
-            cached.bots;
-
-
-        // =====================================================
-        // RÉCUPÉRER LES CHANNELS
-        // =====================================================
-
-        const totalChannel =
-            guild.channels.cache.get(
-                stats.total
+        } else if (!canManageChannel(guild, totalChannel)) {
+            console.error(
+                `❌ ManageChannels manquant sur : ${totalChannel.name}`
             );
+        } else {
+            const name = `🌎 Total : ${total}`;
 
-
-        const membersChannel =
-            guild.channels.cache.get(
-                stats.members
-            );
-
-
-        const botsChannel =
-            guild.channels.cache.get(
-                stats.bots
-            );
-
-
-        // =====================================================
-        // TOTAL
-        // =====================================================
-
-        if (totalChannel) {
-
-            const name =
-                `🌎 Total : ${total}`;
-
-
-            if (
-                totalChannel.name !== name
-            ) {
-
-                await totalChannel.setName(
-                    name
-                );
-
+            if (totalChannel.name !== name) {
+                await totalChannel.setName(name);
             }
-
         }
 
+        if (!membersChannel) {
+            console.error(
+                `❌ Salon MEMBRES introuvable : ${STATS.members}`
+            );
+        } else if (!canManageChannel(guild, membersChannel)) {
+            console.error(
+                `❌ ManageChannels manquant sur : ${membersChannel.name}`
+            );
+        } else {
+            const name = `👥 Membres : ${members}`;
 
-        // =====================================================
-        // MEMBRES
-        // =====================================================
-
-        if (membersChannel) {
-
-            const name =
-                `👥 Membres : ${members}`;
-
-
-            if (
-                membersChannel.name !== name
-            ) {
-
-                await membersChannel.setName(
-                    name
-                );
-
+            if (membersChannel.name !== name) {
+                await membersChannel.setName(name);
             }
-
         }
 
+        if (!botsChannel) {
+            console.error(
+                `❌ Salon BOTS introuvable : ${STATS.bots}`
+            );
+        } else if (!canManageChannel(guild, botsChannel)) {
+            console.error(
+                `❌ ManageChannels manquant sur : ${botsChannel.name}`
+            );
+        } else {
+            const name = `🤖 Bots : ${bots}`;
 
-        // =====================================================
-        // BOTS
-        // =====================================================
-
-        if (botsChannel) {
-
-            const name =
-                `🤖 Bots : ${bots}`;
-
-
-            if (
-                botsChannel.name !== name
-            ) {
-
-                await botsChannel.setName(
-                    name
-                );
-
+            if (botsChannel.name !== name) {
+                await botsChannel.setName(name);
             }
-
         }
-
 
         console.log(
-            `📊 Stats mises à jour : ${total} total | ${members} membres | ${bots} bots`
+            `📊 Stats mises à jour : ` +
+            `${total} total | ${members} membres | ${bots} bots`
         );
-
 
     } catch (error) {
-
         console.error(
-            "❌ Erreur mise à jour des channels :",
+            "❌ Erreur mise à jour des stats :",
             error
         );
-
     }
-
 }
-
-
-// =========================================================
-// MISE À JOUR AVEC PETIT DÉLAI
-// =========================================================
 
 function queueUpdate(guild) {
+    const existing = updateTimers.get(guild.id);
 
-    if (
-        updateTimers.has(
-            guild.id
-        )
-    ) {
-
-        clearTimeout(
-            updateTimers.get(
-                guild.id
-            )
-        );
-
+    if (existing) {
+        clearTimeout(existing);
     }
 
+    const timer = setTimeout(async () => {
+        updateTimers.delete(guild.id);
+        await updateChannels(guild);
+    }, 1500);
 
-    const timer =
-        setTimeout(
-            async () => {
-
-                updateTimers.delete(
-                    guild.id
-                );
-
-
-                await updateChannels(
-                    guild
-                );
-
-            },
-            1500
-        );
-
-
-    updateTimers.set(
-        guild.id,
-        timer
-    );
-
+    updateTimers.set(guild.id, timer);
 }
-
-
-// =========================================================
-// MEMBRE QUI REJOINT
-// =========================================================
 
 async function handleMemberAdd(member) {
+    const guild = member.guild;
 
-    const guild =
-        member.guild;
-
-
-    let cached =
-        guildStatsCache.get(
-            guild.id
-        );
-
-
-    // =====================================================
-    // SI LE CACHE N'EXISTE PAS
-    // =====================================================
+    let cached = guildStatsCache.get(guild.id);
 
     if (!cached) {
-
-        await initializeGuildStats(
-            guild
-        );
-
+        await initializeGuildStats(guild);
         return;
-
     }
 
-
-    // =====================================================
-    // AJOUT
-    // =====================================================
-
-    if (
-        member.user.bot
-    ) {
-
+    if (member.user.bot) {
         cached.bots++;
-
-    } else {
-
-        cached.members++;
-
     }
 
-
-    guildStatsCache.set(
-        guild.id,
-        cached
-    );
-
-
-    /*
-     * On attend 1,5 seconde avant de modifier
-     * les salons.
-     *
-     * Si plusieurs personnes rejoignent rapidement,
-     * on évite de renommer les salons 15 fois.
-     */
-
-    queueUpdate(
-        guild
-    );
-
+    guildStatsCache.set(guild.id, cached);
+    queueUpdate(guild);
 }
-
-
-// =========================================================
-// MEMBRE QUI PART
-// =========================================================
 
 async function handleMemberRemove(member) {
+    const guild = member.guild;
 
-    const guild =
-        member.guild;
-
-
-    let cached =
-        guildStatsCache.get(
-            guild.id
-        );
-
-
-    // =====================================================
-    // SI LE CACHE N'EXISTE PAS
-    // =====================================================
+    let cached = guildStatsCache.get(guild.id);
 
     if (!cached) {
-
-        await initializeGuildStats(
-            guild
-        );
-
+        await initializeGuildStats(guild);
         return;
-
     }
 
-
-    // =====================================================
-    // RETRAIT
-    // =====================================================
-
-    if (
-        member.user.bot
-    ) {
-
-        cached.bots =
-            Math.max(
-                0,
-                cached.bots - 1
-            );
-
-    } else {
-
-        cached.members =
-            Math.max(
-                0,
-                cached.members - 1
-            );
-
+    if (member.user.bot) {
+        cached.bots = Math.max(0, cached.bots - 1);
     }
 
-
-    guildStatsCache.set(
-        guild.id,
-        cached
-    );
-
-
-    queueUpdate(
-        guild
-    );
-
+    guildStatsCache.set(guild.id, cached);
+    queueUpdate(guild);
 }
 
+module.exports = async client => {
+    if (initialized) {
+        return;
+    }
 
-// =========================================================
-// EVENT PRINCIPAL
-// =========================================================
+    initialized = true;
 
-module.exports = async (
-    client
-) => {
+    ensureStatsFile();
 
+    client.once("clientReady", async () => {
+        console.log(
+            "📊 Synchronisation des statistiques..."
+        );
 
-    // =====================================================
-    // DÉMARRAGE
-    // =====================================================
-
-    client.once(
-        "clientReady",
-        async () => {
-
-            console.log(
-                "📊 Synchronisation des statistiques..."
-            );
-
-
-            for (
-                const guild
-                of client.guilds.cache.values()
-            ) {
-
-                await initializeGuildStats(
-                    guild
-                );
-
-            }
-
-
-            console.log(
-                "✅ Statistiques synchronisées."
-            );
-
+        for (const guild of client.guilds.cache.values()) {
+            await initializeGuildStats(guild);
         }
-    );
 
+        console.log(
+            "✅ Statistiques synchronisées."
+        );
+    });
 
-    // =====================================================
-    // MEMBRE QUI REJOINT
-    // =====================================================
+    client.on("guildMemberAdd", async member => {
+        await handleMemberAdd(member);
+    });
 
-    client.on(
-        "guildMemberAdd",
-        async member => {
-
-            await handleMemberAdd(
-                member
-            );
-
-        }
-    );
-
-
-    // =====================================================
-    // MEMBRE QUI PART
-    // =====================================================
-
-    client.on(
-        "guildMemberRemove",
-        async member => {
-
-            await handleMemberRemove(
-                member
-            );
-
-        }
-    );
-
+    client.on("guildMemberRemove", async member => {
+        await handleMemberRemove(member);
+    });
 };
