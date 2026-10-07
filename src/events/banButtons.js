@@ -2867,97 +2867,29 @@ module.exports = async (
 
             new EmbedBuilder()
 
-
-
-
-
-
-
                 .setColor(
-
-
-
                     "#57F287"
-
-
-
                 )
-
-
-
-
-
-
 
                 .setTitle(
-
-
-
                     "🔨 Ban effectué"
-
-
-
                 )
-
-
-
-
-
-
 
                 .setDescription(
-
-
-
-`
-
-
-
-👤 **Membre :** ${target.user.tag}
-
-
-
-
-
-
-
+`👤 **Membre :** ${target.user.tag}
 🛡️ **Modérateur :** ${interaction.user}
-
-
-
-
-
-
-
 📝 **Raison :** ${reason}
-
-
-
-
-
-
-
 ⏱️ **Durée :** ${formatDuration(durationKey)}
-
-
-
-
-
-
-
-🔓 **Expiration :** ${expirationText}
-
-
-
-`
-
-
-
+🔓 **Expiration :** ${expirationText}`
                 )
 
+                .setThumbnail(
+                    target.user.displayAvatarURL({
+                        size: 128
+                    })
+                )
 
-
-.setTimestamp()
+                .setTimestamp()
 
 
 
