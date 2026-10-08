@@ -143,6 +143,35 @@ module.exports = {
                 user.id;
 
 
+            // =========================================================
+            // PSEUDO DU SERVEUR
+            // =========================================================
+            //
+            // On affiche le pseudo/nickname du serveur en premier.
+            // En dessous, on affiche le username réel du compte Discord.
+            // Si l'utilisateur n'est plus sur le serveur, on retombe
+            // automatiquement sur son username.
+            // =========================================================
+
+            let targetMember = null;
+
+            try {
+
+                targetMember =
+                    await message.guild.members.fetch(id);
+
+            } catch {
+
+                targetMember = null;
+
+            }
+
+            const serverName =
+                targetMember
+                    ? targetMember.displayName
+                    : user.username;
+
+
 
 
 
@@ -2563,8 +2592,23 @@ module.exports = {
                 // IDENTITÉ
                 // ---------------------------------------------------------
 
-                drawText(ctx, `.${user.username}`, 178, 79, "700 30px Arial", "#F9A8D4");
-                drawText(ctx, `@${user.username}`, 180, 108, "500 13px Arial", "rgba(255,255,255,0.48)");
+                drawText(
+                    ctx,
+                    `.${serverName}`,
+                    178,
+                    79,
+                    "700 30px Arial",
+                    "#F9A8D4"
+                );
+
+                drawText(
+                    ctx,
+                    `@${user.username}`,
+                    180,
+                    108,
+                    "500 13px Arial",
+                    "rgba(255,255,255,0.48)"
+                );
 
                 roundRectFill(
                     ctx,
