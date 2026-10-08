@@ -2592,18 +2592,131 @@ module.exports = {
                 // IDENTITÉ
                 // ---------------------------------------------------------
 
-                drawText(
-                    ctx,
-                    `.${serverName}`,
-                    178,
-                    79,
-                    "700 30px Arial",
-                    "#F9A8D4"
-                );
+                // ---------------------------------------------------------
+                // NOM DU SERVEUR + USERNAME DISCORD
+                // ---------------------------------------------------------
+                //
+                // Le nom serveur dispose maintenant d'une largeur maximale
+                // afin de ne jamais empiéter sur la zone NIVEAU / XP.
+                // Si le pseudo est trop long, il est automatiquement réduit
+                // puis tronqué avec "..." si nécessaire.
+                // ---------------------------------------------------------
+
+                const serverNameText =
+                    `.${serverName}`;
+
+                const serverNameMaxWidth =
+                    135;
+
+                let serverNameFontSize =
+                    30;
+
+                ctx.font =
+                    `700 ${serverNameFontSize}px Arial`;
+
+                while (
+                    ctx.measureText(serverNameText).width >
+                        serverNameMaxWidth &&
+                    serverNameFontSize > 20
+                ) {
+
+                    serverNameFontSize -= 1;
+
+                    ctx.font =
+                        `700 ${serverNameFontSize}px Arial`;
+
+                }
+
+                let displayServerName =
+                    serverNameText;
+
+                if (
+                    ctx.measureText(
+                        displayServerName
+                    ).width >
+                    serverNameMaxWidth
+                ) {
+
+                    let shortened =
+                        displayServerName;
+
+                    while (
+                        shortened.length > 4 &&
+                        ctx.measureText(
+                            `${shortened}...`
+                        ).width >
+                        serverNameMaxWidth
+                    ) {
+
+                        shortened =
+                            shortened.slice(
+                                0,
+                                -1
+                            );
+
+                    }
+
+                    displayServerName =
+                        `${shortened}...`;
+
+                }
 
                 drawText(
                     ctx,
-                    `@${user.username}`,
+                    displayServerName,
+                    178,
+                    79,
+                    `700 ${serverNameFontSize}px Arial`,
+                    "#F9A8D4"
+                );
+
+
+                const usernameText =
+                    `@${user.username}`;
+
+                const usernameMaxWidth =
+                    135;
+
+                ctx.font =
+                    "500 13px Arial";
+
+                let displayUsername =
+                    usernameText;
+
+                if (
+                    ctx.measureText(
+                        displayUsername
+                    ).width >
+                    usernameMaxWidth
+                ) {
+
+                    let shortened =
+                        displayUsername;
+
+                    while (
+                        shortened.length > 4 &&
+                        ctx.measureText(
+                            `${shortened}...`
+                        ).width >
+                        usernameMaxWidth
+                    ) {
+
+                        shortened =
+                            shortened.slice(
+                                0,
+                                -1
+                            );
+
+                    }
+
+                    displayUsername =
+                        `${shortened}...`;
+
+                }
+
+                drawText(
+                    ctx,
+                    displayUsername,
                     180,
                     108,
                     "500 13px Arial",
