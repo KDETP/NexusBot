@@ -18,6 +18,10 @@ const activityEngine =
 const brain =
     require("./src/services/brain");
 
+const {
+    createMusicPlayer
+} = require("./src/services/musicPlayer");
+
 
 // ==========================================
 // BASE DE DONNÉES
@@ -60,6 +64,9 @@ const client = new Client({
     ]
 
 });
+
+// Le lecteur est créé une seule fois et conserve une file distincte par serveur.
+client.music = createMusicPlayer(client);
 
 
 // ==========================================
