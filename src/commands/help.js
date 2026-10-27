@@ -119,6 +119,17 @@ Utilise le préfixe **n**
 
 ━━━━━━━━━━━━━━━━━━
 
+## 🎵 Musique
+
+• \`nplay <titre ou lien>\`
+→ Lire un titre ou un lien public YouTube / Spotify / autre site compatible
+
+• \`nskip\`
+→ Passer au morceau suivant
+
+
+━━━━━━━━━━━━━━━━━━
+
 ## 😂 Fun Image
 
 • \`nship @user\`

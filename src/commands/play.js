@@ -1,7 +1,40 @@
 const { PermissionFlagsBits } = require("discord.js");
 
 function isSpotifyUrl(query) {
-    return /(?:open\.)?spotify\.com\//i.test(query);
+    try {
+        const url = new URL(query);
+        return /(^|\.)spotify\.com$/i.test(url.hostname) || url.hostname === "spotify.link";
+    } catch {
+        return false;
+    }
+}
+
+function isSpotifyTrackUrl(query) {
+    try {
+        const url = new URL(query);
+        return /(^|\.)spotify\.com$/i.test(url.hostname) && /\/track\/[^/]+/i.test(url.pathname);
+    } catch {
+        return false;
+    }
+}
+
+async function getSpotifyFallbackTitle(query) {
+    const response = await fetch(
+        `https://open.spotify.com/oembed?url=${encodeURIComponent(query)}`,
+        { signal: AbortSignal.timeout(8000) }
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return typeof data.title === "string" ? data.title.trim() : null;
+}
+
+function getSafeErrorDetail(error) {
+    return String(error?.message || "Erreur inconnue")
+        .replace(/https?:\/\/[^\s"'<>]+/gi, "[URL]")
+        .replace(/\s+/g, " ")
+        .slice(0, 500);
 }
 
 module.exports = {
@@ -51,25 +84,44 @@ module.exports = {
             );
         }
 
-        if (
-            isSpotifyUrl(query) &&
-            (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET)
-        ) {
-            await message.reply(
-                "ℹ️ Je vais essayer de résoudre ce lien Spotify. Pour une compatibilité Spotify fiable, ajoute `SPOTIFY_CLIENT_ID` et `SPOTIFY_CLIENT_SECRET` dans le fichier `.env` du bot."
-            );
-        }
+        const playOptions = {
+            member: message.member,
+            textChannel: message.channel,
+            metadata: { channel: message.channel }
+        };
 
         try {
-            await player.play(voiceChannel, query, {
-                member: message.member,
-                textChannel: message.channel,
-                metadata: { channel: message.channel }
-            });
+            await player.play(voiceChannel, query, playOptions);
         } catch (error) {
-            console.error("Impossible d'ajouter le morceau :", error.message);
+            // Spotify's public oEmbed endpoint can still provide a track title
+            // when its metadata plugin is temporarily unavailable. Search that
+            // title on YouTube; this does not bypass private or DRM-protected media.
+            if (isSpotifyUrl(query) && isSpotifyTrackUrl(query)) {
+                try {
+                    const fallbackTitle = await getSpotifyFallbackTitle(query);
+
+                    if (fallbackTitle) {
+                        await player.play(voiceChannel, fallbackTitle, playOptions);
+                        await message.reply(
+                            `ℹ️ Le lien Spotify ne répondait pas; j'ai recherché **${fallbackTitle}** sur YouTube.`
+                        );
+                        return;
+                    }
+                } catch (fallbackError) {
+                    console.error(
+                        "Échec de la solution de repli Spotify :",
+                        fallbackError?.name || "erreur inconnue"
+                    );
+                }
+            }
+
+            console.error(
+                "Impossible d'ajouter le morceau :",
+                error?.errorCode || error?.name || "erreur inconnue",
+                getSafeErrorDetail(error)
+            );
             await message.reply(
-                "❌ Je n'ai pas trouvé de version lisible de ce morceau. Essaie un autre lien ou le titre exact."
+                "❌ Je n'ai pas trouvé de version lisible. Vérifie que le contenu est public, puis essaie le titre exact ou un autre lien."
             );
         }
     }
