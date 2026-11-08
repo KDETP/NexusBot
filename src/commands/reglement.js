@@ -68,8 +68,6 @@ Amuse-toi, participe aux événements et garde une bonne ambiance.
 
         })
 
-        .setTimestamp();
-
 
 
 

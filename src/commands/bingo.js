@@ -187,8 +187,6 @@ Réessaie dans :
                         "Nébula • Bingo • Mise : 500"
                 })
 
-                .setTimestamp();
-
 
         return message.reply({
             embeds: [

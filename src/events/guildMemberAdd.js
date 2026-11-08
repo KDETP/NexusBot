@@ -163,6 +163,33 @@ module.exports = async (
                 ).size;
 
 
+            // Récupère le profil complet afin d'obtenir la bannière Discord.
+            const user =
+                await member.user.fetch({
+                    force: true
+                });
+
+
+            const avatarURL =
+                user.displayAvatarURL({
+
+                    dynamic: true,
+
+                    size: 1024
+
+                });
+
+
+            const bannerURL =
+                user.bannerURL({
+
+                    dynamic: true,
+
+                    size: 4096
+
+                });
+
+
             const embed =
                 new EmbedBuilder()
 
@@ -171,53 +198,61 @@ module.exports = async (
                     )
 
                     .setTitle(
-                        "🌌 Bienvenue sur NebuCommunity !"
+                        `✦ ${member.displayName} vient d'arriver !`
                     )
 
                     .setThumbnail(
 
-                        member.user.displayAvatarURL({
-
-                            dynamic: true,
-
-                            size: 1024
-
-                        })
+                        avatarURL
 
                     )
 
                     .setDescription(
 `
-👋 Bienvenue dans la communauté, ${member} !
+Bienvenue ${member} sur **NebuCommunity**.
 
-🎉 Tu es notre **${members}ème membre** !
-
-━━━━━━━━━━━━━━━━━━
-
-📌 **Pour bien commencer**
-
-📖 Lis les règles du serveur
-
-💬 Découvre les salons et discute avec la communauté
-
-🪙 Gagne des **NebuCoins**
-
-🎰 Découvre le **NebuCasino**
-
-━━━━━━━━━━━━━━━━━━
-
-💜 Nous sommes heureux de t'accueillir parmi nous !
+Tu es notre **${members}ème membre** — profite bien de ton arrivée parmi nous. 💜
 `
                     )
+
+                    .addFields({
+
+                        name:
+                            "👤 Nouveau membre",
+
+                        value:
+                            user.tag,
+
+                        inline: true
+
+                    })
+
+                    .setAuthor({
+
+                        name:
+                            "NebuCommunity • Arrivée",
+
+                        iconURL:
+                            avatarURL
+
+                    })
 
                     .setFooter({
 
                         text:
-                            "NebuBot • Bienvenue"
+                            "NebuBot • Heureux de t'accueillir"
 
                     })
 
-                    .setTimestamp();
+
+            // Les comptes sans bannière gardent un embed propre avec avatar.
+            if (bannerURL) {
+
+                embed.setImage(
+                    bannerURL
+                );
+
+            }
 
 
             /*
@@ -324,8 +359,6 @@ ${inviter}
                             "NebuBot • Système d'invitations"
 
                     })
-
-                    .setTimestamp();
 
 
             /*

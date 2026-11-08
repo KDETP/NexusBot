@@ -215,8 +215,6 @@ En attente d'un membre du staff.
 `
         )
 
-        .setTimestamp();
-
 
 
         const channel =

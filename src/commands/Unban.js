@@ -171,8 +171,6 @@ module.exports = {
 
                 })
 
-                .setTimestamp();
-
 
         // ======================================
         // ENVOYER

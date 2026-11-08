@@ -999,7 +999,6 @@ async function executeLove(message, args = []) {
         ].join("\n"))
         .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 256 }))
         .setFooter({ text: "💞 Calcul personnalisé pour ces deux utilisateurs" })
-        .setTimestamp();
 
     if (gifUrl) {
         embed.setImage(gifUrl);

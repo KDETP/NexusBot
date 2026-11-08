@@ -205,9 +205,6 @@ Aucun gain réel.
             })
 
 
-            .setTimestamp();
-
-
 
         const embed2 = new EmbedBuilder()
 
@@ -303,8 +300,6 @@ Aucun gain réel.
 .setFooter({
     text: "NebuBot • NebuCasino"
 })
-
-.setTimestamp();
 
 
 

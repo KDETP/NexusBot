@@ -659,8 +659,6 @@ ${expiration}
 
                     })
 
-                    .setTimestamp();
-
 
             await logChannel.send({
 
@@ -711,8 +709,6 @@ ${expiration}
                             "NebuBot • Modération"
 
                     })
-
-                    .setTimestamp()
 
             ],
 

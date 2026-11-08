@@ -341,8 +341,6 @@ ${interaction.user}
 
                 })
 
-                .setTimestamp();
-
 
         await logChannel.send({
 
@@ -391,8 +389,6 @@ ${interaction.user}
                         "NebuBot • Modération"
 
                 })
-
-                .setTimestamp()
 
         ],
 

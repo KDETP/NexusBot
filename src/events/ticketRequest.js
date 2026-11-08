@@ -511,8 +511,6 @@ ${categoryName}
 
                 })
 
-                .setTimestamp();
-
 
         // ======================================
         // MESSAGE DANS LE TICKET

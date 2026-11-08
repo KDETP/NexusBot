@@ -253,8 +253,6 @@ ${message.member}
 
                     })
 
-                    .setTimestamp();
-
 
             await logChannel.send({
 
@@ -298,8 +296,6 @@ ${message.member}
                         "NebuBot • Modération"
 
                 })
-
-                .setTimestamp();
 
 
         return message.reply({

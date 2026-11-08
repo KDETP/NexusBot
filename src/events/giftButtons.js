@@ -188,8 +188,6 @@ ${result.balance.toLocaleString("fr-FR")} NebuCoins
                         "Nébula • Gift"
                 })
 
-                .setTimestamp();
-
 
         return interaction.update({
 
@@ -239,8 +237,6 @@ Tu pourras retenter ta chance plus tard.
                 text:
                     "Nébula • Gift"
             })
-
-            .setTimestamp();
 
 
     return interaction.update({

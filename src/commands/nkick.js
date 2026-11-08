@@ -323,8 +323,6 @@ Le membre sera expulsé après ton choix.
 
                 })
 
-                .setTimestamp();
-
 
         return message.reply({
 

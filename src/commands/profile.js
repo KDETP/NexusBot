@@ -2817,7 +2817,6 @@ module.exports = {
                 .setFooter({
                     text: "Nébulae • Profil"
                 })
-                .setTimestamp();
 
             return message.reply({
                 embeds: [embed],

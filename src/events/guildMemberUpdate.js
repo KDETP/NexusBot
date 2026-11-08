@@ -105,8 +105,6 @@ module.exports = async (
                         "Nébulae • Nouveau boost"
                 })
 
-                .setTimestamp();
-
 
         // =====================================================
         // ENVOI

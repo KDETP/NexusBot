@@ -84,8 +84,6 @@ Continue comme ça 🚀`)
                     text: "Nébulae • Système de niveaux"
                 })
 
-                .setTimestamp();
-
             const levelChannel = message.guild.channels.cache.get(LEVEL_CHANNEL);
 
             if (levelChannel) {

@@ -333,8 +333,6 @@ async function endGiveaway(
 
                 })
 
-                .setTimestamp();
-
 
         // ================================================
         // MODIFIER LE MESSAGE
@@ -601,8 +599,6 @@ async function rerollGiveaway(
                         "Nébula • Giveaway terminé"
 
                 })
-
-                .setTimestamp();
 
 
         await message.edit({

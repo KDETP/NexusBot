@@ -106,7 +106,6 @@ function buildResultEmbed(reels, bet, game, balance) {
             }
         )
         .setFooter({ text: "Nébulae • Slots" })
-        .setTimestamp();
 }
 
 function saveEconomy(economy) {

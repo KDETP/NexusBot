@@ -61,8 +61,6 @@ ${emoji} **${score}%**
 `
     )
 
-    .setTimestamp();
-
 
 
     message.reply({

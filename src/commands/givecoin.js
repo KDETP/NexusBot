@@ -227,8 +227,6 @@ ${target}
                         "Nébula • Transfert"
                 })
 
-                .setTimestamp();
-
 
         return message.reply({
 

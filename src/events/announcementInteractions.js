@@ -33,7 +33,6 @@ function makeEmbed(draft, guild) {
             text: guild.name,
             ...(guild.iconURL() ? { iconURL: guild.iconURL() } : {})
         })
-        .setTimestamp();
 
     if (draft.image) embed.setImage(draft.image);
     return embed;

@@ -106,8 +106,6 @@ Choisis les rôles qui te correspondent en cliquant sur les réactions ci-dessou
 
                 })
 
-                .setTimestamp();
-
 
         // ======================================
         // ENVOYER LE MESSAGE

@@ -623,8 +623,6 @@ module.exports = {
                             "Nébulae • Roulette européenne"
                     })
 
-                    .setTimestamp();
-
 
             // =============================================
             // REMPLACER LE MESSAGE

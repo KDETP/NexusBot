@@ -313,8 +313,6 @@ Le ban sera appliqué après ton choix.
 
                 })
 
-                .setTimestamp();
-
 
         return message.reply({
 

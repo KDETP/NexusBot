@@ -105,8 +105,6 @@ Tu pourras récupérer ta prochaine récompense dans :
                         "Nébula • Daily"
                 })
 
-                .setTimestamp();
-
 
         return message.reply({
             embeds: [

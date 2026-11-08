@@ -163,8 +163,6 @@ ${interaction.user}
 
                     })
 
-                    .setTimestamp();
-
 
             await logs.send({
 

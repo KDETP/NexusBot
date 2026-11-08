@@ -76,7 +76,6 @@ module.exports = {
                 .setFooter({
                     text: "Nébul • Modération"
                 })
-                .setTimestamp();
 
             const confirm = await message.channel.send({
                 embeds: [embed]

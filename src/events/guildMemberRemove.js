@@ -272,8 +272,6 @@ ${durationText}
 
                 })
 
-                .setTimestamp();
-
 
         // ======================================
         // ENVOYER LE LOG
@@ -403,8 +401,6 @@ ${durationText}
                     "NebuBot • Départs"
 
             })
-
-            .setTimestamp();
 
 
     // ==========================================

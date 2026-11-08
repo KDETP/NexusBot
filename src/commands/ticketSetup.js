@@ -68,8 +68,6 @@ Un membre du staff répondra rapidement.
 
             })
 
-            .setTimestamp();
-
 
 
         const button = new ActionRowBuilder()

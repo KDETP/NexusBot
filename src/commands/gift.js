@@ -161,8 +161,6 @@ Un seul contient une récompense. 👀
                         "Nébula • Bonne chance !"
                 })
 
-                .setTimestamp();
-
 
         return message.reply({
 
