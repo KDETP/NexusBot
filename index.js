@@ -22,6 +22,10 @@ const {
     createMusicPlayer
 } = require("./src/services/musicPlayer");
 
+const {
+    createServerLogger
+} = require("./src/services/serverLogger");
+
 
 // ==========================================
 // BASE DE DONNÉES
@@ -49,7 +53,19 @@ const client = new Client({
 
         GatewayIntentBits.GuildMessageReactions,
 
-        GatewayIntentBits.GuildVoiceStates
+        GatewayIntentBits.GuildVoiceStates,
+
+        GatewayIntentBits.GuildModeration,
+
+        GatewayIntentBits.GuildExpressions,
+
+        GatewayIntentBits.GuildInvites,
+
+        GatewayIntentBits.AutoModerationExecution,
+
+        GatewayIntentBits.AutoModerationConfiguration,
+
+        GatewayIntentBits.GuildScheduledEvents
 
     ],
 
@@ -67,6 +83,9 @@ const client = new Client({
 
 // Le lecteur est créé une seule fois et conserve une file distincte par serveur.
 client.music = createMusicPlayer(client);
+
+// Ajoute les logs sans remplacer les handlers existants.
+createServerLogger(client);
 
 
 // ==========================================
