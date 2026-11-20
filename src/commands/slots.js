@@ -1,11 +1,8 @@
 const { EmbedBuilder } = require("discord.js");
-const fs = require("fs");
-const path = require("path");
 
 const betManager = require("../services/casino/betManager");
 const slots = require("../services/casino/slots");
-
-const economyPath = path.join(__dirname, "..", "data", "economy.json");
+const economyStore = require("../services/casino/economyStore");
 const REEL_STOP_FRAMES = [5, 8, 11];
 
 function sleep(ms) {
@@ -108,19 +105,8 @@ function buildResultEmbed(reels, bet, game, balance) {
         .setFooter({ text: "Nébulae • Slots" })
 }
 
-function saveEconomy(economy) {
-    fs.writeFileSync(economyPath, JSON.stringify(economy, null, 2));
-}
-
 function refundBet(userId, bet) {
-    const economy = JSON.parse(fs.readFileSync(economyPath, "utf8"));
-
-    if (!economy[userId]) {
-        economy[userId] = { money: 0, lastDaily: 0 };
-    }
-
-    economy[userId].money += bet;
-    saveEconomy(economy);
+    return economyStore.credit(userId, bet);
 }
 
 module.exports = {
@@ -133,20 +119,16 @@ module.exports = {
             return message.reply("🎰 Tu as déjà une partie de Slots en cours.");
         }
 
-        let economy;
+        let balance;
 
         try {
-            economy = JSON.parse(fs.readFileSync(economyPath, "utf8"));
+            balance = economyStore.getBalance(userId);
         } catch (error) {
-            console.error("Erreur de lecture de economy.json :", error);
+            console.error("Erreur de lecture du solde Slots :", error);
             return message.reply("❌ Impossible de charger ton compte pour le moment.");
         }
 
-        if (!economy[userId]) {
-            economy[userId] = { money: 500, lastDaily: 0 };
-        }
-
-        const result = betManager.getBet(args[0], economy[userId].money);
+        const result = betManager.getBet(args[0], balance);
 
         if (result.error) {
             return message.reply(result.error);
@@ -154,7 +136,7 @@ module.exports = {
 
         const bet = result.bet;
 
-        if (!Number.isInteger(bet) || bet > economy[userId].money) {
+        if (!Number.isSafeInteger(bet) || bet > balance) {
             return message.reply("❌ Tu n'as pas assez de NebuCoins pour cette mise.");
         }
 
@@ -164,11 +146,15 @@ module.exports = {
 
         let wagerSaved = false;
         let payoutSaved = false;
+        let refundSaved = false;
         let slotMessage;
 
         try {
-            economy[userId].money -= bet;
-            saveEconomy(economy);
+            const debit = economyStore.debit(userId, bet);
+            if (!debit.success) {
+                slots.end(userId);
+                return message.reply("❌ Tu n'as pas assez de NebuCoins pour cette mise.");
+            }
             wagerSaved = true;
 
             const finalReels = slots.spin();
@@ -195,12 +181,13 @@ module.exports = {
                 await sleep(180);
             }
 
-            economy[userId].money += game.gain;
-            saveEconomy(economy);
+            const balanceAfter = game.gain > 0
+                ? economyStore.credit(userId, game.gain)
+                : economyStore.getBalance(userId);
             payoutSaved = true;
 
             await slotMessage.edit({
-                embeds: [buildResultEmbed(finalReels, bet, game, economy[userId].money)]
+                embeds: [buildResultEmbed(finalReels, bet, game, balanceAfter)]
             });
         } catch (error) {
             console.error("Erreur Slots :", error);
@@ -208,6 +195,7 @@ module.exports = {
             if (wagerSaved && !payoutSaved) {
                 try {
                     refundBet(userId, bet);
+                    refundSaved = true;
                 } catch (refundError) {
                     console.error("Erreur de remboursement Slots :", refundError);
                 }
@@ -217,7 +205,9 @@ module.exports = {
                 .setColor("#ED4245")
                 .setTitle("❌ Slots indisponibles")
                 .setDescription(wagerSaved && !payoutSaved
-                    ? `Une erreur est survenue. **${formatMoney(bet)} NebuCoins** ont été remboursés.`
+                    ? refundSaved
+                        ? `Une erreur est survenue. **${formatMoney(bet)} NebuCoins** ont été remboursés.`
+                        : "Une erreur est survenue et le remboursement n'a pas pu être enregistré. Contacte le staff."
                     : "Une erreur est survenue pendant la partie.");
 
             try {

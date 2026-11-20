@@ -96,9 +96,9 @@ Plus tu gagnes.`);
 
                     .setTitle("🪙 Guide • Pile ou Face")
 
-                    .setDescription(`50% de chance de gagner.
+                    .setDescription(`Choisis **Pile** ou **Face**.
 
-Simple mais efficace.`);
+Tu gagnes si le résultat correspond à ton choix. Le retour total vaut **2× ta mise**, mise initiale incluse.`);
 
                 break;
 
@@ -108,7 +108,9 @@ Simple mais efficace.`);
 
                     .setTitle("🎲 Guide • Dés")
 
-                    .setDescription(`Le plus grand chiffre gagne.`);
+                    .setDescription(`Choisis **Bas (1 à 3)** ou **Haut (4 à 6)**.
+
+Tu gagnes si le dé tombe dans ta moitié. Le retour total vaut **2× ta mise**, mise initiale incluse.`);
 
                 break;
 
@@ -195,7 +197,7 @@ Choisis un jeu pour voir toutes les règles.`);
                 },
 
                 {
-                    label: "🎲 Dés",
+                    label: "🎲 Dé haut ou bas",
                     value: "dice",
                     description: "Guide complet"
                 }

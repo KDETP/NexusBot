@@ -6,52 +6,33 @@ const {
     AttachmentBuilder
 } = require("discord.js");
 
-const fs =
-    require("fs");
-
-const path =
-    require("path");
-
 const blackjack =
     require("../services/casino/blackjackManager");
+
+const economyStore =
+    require("../services/casino/economyStore");
 
 const renderer =
     require("../services/casino/blackjackRenderer");
 
-const economyPath =
-    path.join(
-        __dirname,
-        "..",
-        "data",
-        "economy.json"
-    );
+const casinoSessions =
+    require("../services/casino/casinoSessions");
+
+const runCasinoCommand =
+    require("../services/casino/interactionRunner");
 
 // ======================================================
 // ECONOMIE
 // ======================================================
 
 function loadEconomy() {
-
-    return JSON.parse(
-        fs.readFileSync(
-            economyPath,
-            "utf8"
-        )
-    );
+    return economyStore.load();
 }
 
 function saveEconomy(
     economy
 ) {
-
-    fs.writeFileSync(
-        economyPath,
-        JSON.stringify(
-            economy,
-            null,
-            2
-        )
-    );
+    return economyStore.save(economy);
 }
 
 // ======================================================
@@ -62,27 +43,7 @@ function addMoney(
     userId,
     amount
 ) {
-
-    const economy =
-        loadEconomy();
-
-    if (
-        !economy[userId]
-    ) {
-
-        economy[userId] = {
-            money: 500
-        };
-    }
-
-    economy[userId].money +=
-        amount;
-
-    saveEconomy(
-        economy
-    );
-
-    return economy[userId].money;
+    return economyStore.credit(userId, amount);
 }
 
 // ======================================================
@@ -432,6 +393,10 @@ async function finishGame(
         economy
     );
 
+    // Le gain est enregistré avant le rendu, pour empêcher un second clic
+    // de payer deux fois si l'image ou la mise à jour Discord échoue.
+    blackjack.end(ownerId);
+
     // ==================================================
     // IMAGE FINALE
     // ==================================================
@@ -507,10 +472,6 @@ async function finishGame(
                     "Nébul Casino"
             });
 
-    blackjack.end(
-        ownerId
-    );
-
     return interaction.update({
 
         embeds: [
@@ -542,6 +503,35 @@ module.exports = async (
 
     const id =
         interaction.customId;
+
+    if (id.startsWith("casino_blackjack_")) {
+        const ownerId = casinoSessions.get(interaction.message.id);
+
+        if (!ownerId) {
+            return interaction.reply({
+                content: "❌ Ce menu de casino a expiré. Relance `nebu casino`.",
+                ephemeral: true
+            });
+        }
+
+        if (ownerId !== interaction.user.id) {
+            return interaction.reply({
+                content: "❌ Tu ne peux pas utiliser le casino d'un autre joueur.",
+                ephemeral: true
+            });
+        }
+
+        const bet = Number(id.slice("casino_blackjack_".length));
+        if (!Number.isSafeInteger(bet) || bet <= 0) {
+            return interaction.reply({
+                content: "❌ Mise invalide.",
+                ephemeral: true
+            });
+        }
+
+        casinoSessions.delete(interaction.message.id);
+        return runCasinoCommand(interaction, require("../commands/bj"), [String(bet)]);
+    }
 
     if (
         !id.startsWith("bj_")

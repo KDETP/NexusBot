@@ -33,10 +33,10 @@ module.exports = {
 
 
 
-        if (!bet || isNaN(bet)) {
+        if (!Number.isSafeInteger(bet) || bet <= 0) {
 
             return {
-                error: "❌ Mise invalide."
+                error: "❌ Mise invalide. Utilise un montant entier."
             };
 
         }

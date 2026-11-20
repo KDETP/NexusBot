@@ -65,7 +65,7 @@ Choisis un jeu ci-dessous pour apprendre les règles, les gains et les astuces.
                 },
 
                 {
-                    label: "🎲 Dés",
+                    label: "🎲 Dé haut ou bas",
                     value: "dice",
                     description: "Comment jouer aux Dés"
                 }

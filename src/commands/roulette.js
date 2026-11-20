@@ -9,20 +9,17 @@ const {
 const roulette =
     require("../services/casino/rouletteManager");
 
+const betManager =
+    require("../services/casino/betManager");
+
+const economyStore =
+    require("../services/casino/economyStore");
+
 const {
     renderRoulette,
     DURATION
 } =
     require("../services/casino/rouletteEngine");
-
-
-const economyPath =
-    path.join(
-        __dirname,
-        "..",
-        "data",
-        "economy.json"
-    );
 
 
 const tempDir =
@@ -74,35 +71,6 @@ function isNumberBet(bet) {
         value >= 0 &&
         value <= 36 &&
         String(value) === String(bet)
-    );
-
-}
-
-
-function loadEconomy() {
-
-    return JSON.parse(
-        fs.readFileSync(
-            economyPath,
-            "utf8"
-        )
-    );
-
-}
-
-
-function saveEconomy(
-    economy
-) {
-
-    fs.writeFileSync(
-        economyPath,
-        JSON.stringify(
-            economy,
-            null,
-            2
-        ),
-        "utf8"
     );
 
 }
@@ -207,17 +175,15 @@ module.exports = {
         // ECONOMIE
         // =================================================
 
-        let economy;
+        let balance;
 
         try {
-
-            economy =
-                loadEconomy();
+            balance = economyStore.getBalance(userId);
 
         } catch (error) {
 
             console.error(
-                "❌ Erreur economy.json :",
+                "❌ Erreur de lecture du solde roulette :",
                 error
             );
 
@@ -228,69 +194,24 @@ module.exports = {
         }
 
 
-        if (
-            !economy[userId]
-        ) {
-
-            economy[userId] = {
-
-                money: 500,
-
-                lastDaily: 0
-
-            };
-
-        }
-
-
         // =================================================
         // MISE
         // =================================================
 
-        let amount =
-            String(
-                args[0]
-            ).toLowerCase();
+        const amountInput = String(args[0] || "").toLowerCase();
+        const betResult = betManager.getBet(
+            amountInput === "max" ? "all" : amountInput,
+            balance
+        );
 
-
-        if (
-            amount === "all" ||
-            amount === "max"
-        ) {
-
-            amount =
-                Number(
-                    economy[userId].money
-                );
-
-        } else {
-
-            amount =
-                Number(
-                    amount
-                );
-
+        if (betResult.error) {
+            return message.reply(betResult.error);
         }
 
-
-        if (
-            !Number.isSafeInteger(
-                amount
-            ) ||
-            amount <= 0
-        ) {
-
-            return message.reply(
-                "❌ Mise invalide. Utilise un nombre entier supérieur à 0."
-            );
-
-        }
+        const amount = betResult.bet;
 
 
-        if (
-            economy[userId].money <
-            amount
-        ) {
+        if (balance < amount) {
 
             return message.reply(
                 "❌ Tu n'as pas assez de NebuCoins."
@@ -333,15 +254,16 @@ module.exports = {
         // RETRAIT DE LA MISE
         // =================================================
 
-        economy[userId].money -=
-            amount;
-
-
+        let wagerSaved = false;
+        let settlementSaved = false;
         try {
-
-            saveEconomy(
-                economy
-            );
+            const debit = economyStore.debit(userId, amount);
+            if (!debit.success) {
+                return message.reply(
+                    "❌ Tu n'as pas assez de NebuCoins."
+                );
+            }
+            wagerSaved = true;
 
         } catch (error) {
 
@@ -349,9 +271,6 @@ module.exports = {
                 "❌ Erreur sauvegarde mise :",
                 error
             );
-
-            economy[userId].money +=
-                amount;
 
             return message.reply(
                 "❌ Impossible d'enregistrer la mise."
@@ -382,13 +301,9 @@ module.exports = {
                 error
             );
 
-            economy[userId].money +=
-                amount;
-
             try {
-                saveEconomy(
-                    economy
-                );
+                economyStore.credit(userId, amount);
+                wagerSaved = false;
             } catch {}
 
             return message.reply(
@@ -449,13 +364,9 @@ module.exports = {
                 error
             );
 
-            economy[userId].money +=
-                amount;
-
             try {
-                saveEconomy(
-                    economy
-                );
+                economyStore.credit(userId, amount);
+                wagerSaved = false;
             } catch {}
 
             roulette.end(
@@ -478,6 +389,8 @@ module.exports = {
 
 
         try {
+
+            fs.mkdirSync(tempDir, { recursive: true });
 
             await renderRoulette(
                 game.number,
@@ -554,19 +467,10 @@ module.exports = {
             // PAYER SI GAGNÉ
             // =============================================
 
-            if (
-                game.win
-            ) {
-
-                economy[userId].money +=
-                    game.gain;
-
-            }
-
-
-            saveEconomy(
-                economy
-            );
+            const finalBalance = game.win
+                ? economyStore.credit(userId, game.gain)
+                : economyStore.getBalance(userId);
+            settlementSaved = true;
 
 
             // =============================================
@@ -613,7 +517,7 @@ module.exports = {
                                 ? `🏆 **Gain :** +${formatMoney(game.gain)} NebuCoins`
                                 : `❌ **Perte :** -${formatMoney(game.amount)} NebuCoins`,
                             "",
-                            `💳 **Solde :** ${formatMoney(economy[userId].money)} NebuCoins`
+                            `💳 **Solde :** ${formatMoney(finalBalance)} NebuCoins`
                         ].join("\n")
 
                     )
@@ -652,23 +556,21 @@ module.exports = {
             // REMBOURSEMENT
             // =============================================
 
-            economy[userId].money +=
-                amount;
+            let refundSaved = false;
+            if (wagerSaved && !settlementSaved) {
+                try {
+                    economyStore.credit(userId, amount);
+                    wagerSaved = false;
+                    refundSaved = true;
 
+                } catch (saveError) {
 
-            try {
+                    console.error(
+                        "❌ Erreur remboursement roulette :",
+                        saveError
+                    );
 
-                saveEconomy(
-                    economy
-                );
-
-            } catch (saveError) {
-
-                console.error(
-                    "❌ Erreur remboursement roulette :",
-                    saveError
-                );
-
+                }
             }
 
 
@@ -688,7 +590,11 @@ module.exports = {
                         [
                             "Une erreur est survenue.",
                             "",
-                            `💰 **${formatMoney(amount)} NebuCoins ont été remboursés.**`
+                            settlementSaved
+                                ? "La partie a déjà été réglée et ton solde est à jour."
+                                : refundSaved
+                                    ? `💰 **${formatMoney(amount)} NebuCoins ont été remboursés.**`
+                                    : "Le remboursement n'a pas pu être enregistré. Contacte le staff."
                         ].join("\n")
 
                     );

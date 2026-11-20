@@ -4,12 +4,6 @@ const blackjack =
 const betManager =
     require("../services/casino/betManager");
 
-const fs =
-    require("fs");
-
-const path =
-    require("path");
-
 const {
     AttachmentBuilder
 } = require("discord.js");
@@ -17,30 +11,7 @@ const {
 const renderer =
     require("../services/casino/blackjackRenderer");
 
-const economyPath =
-    path.join(
-        __dirname,
-        "..",
-        "data",
-        "economy.json"
-    );
-
-// ======================================================
-// ECONOMIE
-// ======================================================
-
-function getEconomy() {
-
-    const economy =
-        JSON.parse(
-            fs.readFileSync(
-                economyPath,
-                "utf8"
-            )
-        );
-
-    return economy;
-}
+const economyStore = require("../services/casino/economyStore");
 
 // ======================================================
 // COMMANDE
@@ -55,36 +26,7 @@ module.exports = {
         args
     ) {
 
-        const economy =
-            getEconomy();
-
-        // Compte
-        if (
-            !economy[
-                message.author.id
-            ]
-        ) {
-
-            economy[
-                message.author.id
-            ] = {
-                money: 500
-            };
-
-            fs.writeFileSync(
-                economyPath,
-                JSON.stringify(
-                    economy,
-                    null,
-                    2
-                )
-            );
-        }
-
-        const money =
-            economy[
-                message.author.id
-            ].money;
+        const money = economyStore.getBalance(message.author.id);
 
         // ==================================================
         // MISE
@@ -151,19 +93,12 @@ module.exports = {
             );
         }
 
-        // Débit seulement maintenant
-        economy[
-            message.author.id
-        ].money -= bet;
-
-        fs.writeFileSync(
-            economyPath,
-            JSON.stringify(
-                economy,
-                null,
-                2
-            )
-        );
+        // Débit seulement maintenant, après la création de la partie.
+        const debit = economyStore.debit(message.author.id, bet);
+        if (!debit.success) {
+            blackjack.end(message.author.id);
+            return message.reply("❌ Tu n'as pas assez de NebuCoins.");
+        }
 
         // ==================================================
         // IMAGE
@@ -172,11 +107,9 @@ module.exports = {
         const buffer =
             renderer.render(
                 game,
-                message.member.displayName ||
+                message.member?.displayName ||
                     message.author.username,
-                economy[
-                    message.author.id
-                ].money
+                debit.balance
             );
 
         const attachment =

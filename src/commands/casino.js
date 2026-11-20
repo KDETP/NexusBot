@@ -19,16 +19,12 @@ module.exports = {
             .setTitle("🎰 Casino Nébul")
 
             .setDescription(
-`Bienvenue au Casino !
+`Bienvenue au **Casino Nébul** !
 
-💰 Gagne des NebuCoins
-🎲 Affronte la chance
-🏆 Grimpe dans le classement
-
-Choisis un jeu ci-dessous.`
+🪙 Joue avec des **NebuCoins virtuels** — aucune mise d'argent réel.
+🎲 Choisis ta mise et ton jeu dans le menu ci-dessous.
+🏆 Bonne chance !`
             )
-
-            .setThumbnail(message.guild.iconURL())
 
             .setFooter({
                 text: "Nébul Casino"
@@ -64,6 +60,18 @@ Choisis un jeu ci-dessous.`
                     label: "🎰 Machine à sous",
                     description: "Décroche le Jackpot.",
                     value: "slots"
+                },
+
+                {
+                    label: "🪙 Pile ou Face",
+                    description: "Choisis un côté et tente ta chance.",
+                    value: "coinflip"
+                },
+
+                {
+                    label: "🎲 Dé haut ou bas",
+                    description: "Parie sur 1–3 ou 4–6.",
+                    value: "dice"
                 }
 
             ]);

@@ -17,7 +17,10 @@ module.exports = (client) => {
 
         "ticketButtons.js",
         "ticketRequest.js",
-        "ticketClose.js"
+        "ticketClose.js",
+        "casinoMenu.js",
+        "casinoButtons.js",
+        "casinoHelpMenu.js"
 
     ];
 
@@ -86,12 +89,6 @@ module.exports = (client) => {
             // ======================================
 
             case "interactionCreate.js":
-
-            case "casinoMenu.js":
-
-            case "casinoButtons.js":
-
-            case "casinoHelpMenu.js":
 
                 client.on(
                     "interactionCreate",

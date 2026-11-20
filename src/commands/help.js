@@ -53,6 +53,9 @@ Bienvenue dans l'aide de **Nébul'App** ✨
 • \`nebu casino\`
 → Menu casino
 
+• \`nebu casinohelp\`
+→ Règles des jeux du casino
+
 • \`nebu slots\`
 → Machine à sous
 

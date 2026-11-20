@@ -2,13 +2,13 @@ const games = new Map();
 
 function createBoard() {
 
-    const board = Array(20).fill("💎");
+    const board = Array(16).fill("💎");
 
     let bombs = 4;
 
     while (bombs > 0) {
 
-        const index = Math.floor(Math.random() * 20);
+        const index = Math.floor(Math.random() * board.length);
 
         if (board[index] === "💣") continue;
 
