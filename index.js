@@ -26,6 +26,10 @@ const {
     createServerLogger
 } = require("./src/services/serverLogger");
 
+const {
+    createDMSupport
+} = require("./src/events/dmSupport");
+
 
 // ==========================================
 // BASE DE DONNÉES
@@ -46,6 +50,8 @@ const client = new Client({
         GatewayIntentBits.Guilds,
 
         GatewayIntentBits.GuildMessages,
+
+        GatewayIntentBits.DirectMessages,
 
         GatewayIntentBits.MessageContent,
 
@@ -86,6 +92,9 @@ client.music = createMusicPlayer(client);
 
 // Ajoute les logs sans remplacer les handlers existants.
 createServerLogger(client);
+
+// Active la réception et la gestion des messages privés.
+createDMSupport(client);
 
 
 // ==========================================

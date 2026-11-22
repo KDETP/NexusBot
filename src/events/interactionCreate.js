@@ -20,7 +20,22 @@ module.exports = async (
     const id = interaction.customId;
 
     // ==========================================
-    // 🎰 QUIZ CASINO
+    // DM SUPPORT
+    // ==========================================
+
+    if (id.startsWith("dmsupport_")) {
+        const {
+            handleInteraction
+        } = require("./dmSupport");
+
+        return handleInteraction(
+            client,
+            interaction
+        );
+    }
+
+    // ==========================================
+    // QUIZ CASINO
     // ==========================================
 
     if (id.startsWith("quizcasi_")) {
@@ -34,7 +49,7 @@ module.exports = async (
     }
 
     // ==========================================
-    // 📢 SYSTÈME D'ANNONCES
+    // SYSTÈME D'ANNONCES
     // ==========================================
 
     if (id.startsWith("annonce_")) {
@@ -48,7 +63,7 @@ module.exports = async (
     }
 
     // ==========================================
-    // 🎫 CRÉATION TICKET
+    // CRÉATION TICKET
     // ==========================================
 
     if (
@@ -65,7 +80,7 @@ module.exports = async (
     }
 
     // ==========================================
-    // 🎫 ACCEPTER / REFUSER
+    // ACCEPTER / REFUSER
     // ==========================================
 
     if (
@@ -82,7 +97,7 @@ module.exports = async (
     }
 
     // ==========================================
-    // 🔒 FERMER TICKET
+    // FERMER TICKET
     // ==========================================
 
     if (id === "close_ticket") {
@@ -111,10 +126,6 @@ module.exports = async (
         "giveawayButtons",
         "giftButtons"
     ];
-
-    // ==========================================
-    // EXÉCUTION
-    // ==========================================
 
     for (const handler of handlers) {
         try {

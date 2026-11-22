@@ -5,9 +5,13 @@ const levelSystem = require("../services/levelSystem");
 
 module.exports = async (client, message) => {
 
-    console.log("📩 Message reçu :", message.content);
+    // Les messages privés sont gérés séparément par dmSupport.js.
+    // Ne pas les traiter comme des commandes ou de l'activité serveur.
+    if (!message.guild) return;
 
     if (message.author.bot) return;
+
+    console.log("📩 Message reçu :", message.content);
 
     activityEngine.addMessage();
     brain.addMessage();
@@ -20,27 +24,27 @@ module.exports = async (client, message) => {
 
     const content = message.content.toLowerCase();
 
-let prefix;
+    let prefix;
 
-if (content.startsWith("nebu")) {
+    if (content.startsWith("nebu")) {
 
-    prefix = "nebu";
+        prefix = "nebu";
 
-} else if (content.startsWith("n")) {
+    } else if (content.startsWith("n")) {
 
-    prefix = "n";
+        prefix = "n";
 
-} else {
+    } else {
 
-    return;
+        return;
 
-}
+    }
 
 
-const args = message.content
-    .slice(prefix.length)
-    .trim()
-    .split(/ +/);
+    const args = message.content
+        .slice(prefix.length)
+        .trim()
+        .split(/ +/);
 
     const commandName = args.shift()?.toLowerCase();
 
